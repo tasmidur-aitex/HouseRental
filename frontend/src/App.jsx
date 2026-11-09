@@ -12,6 +12,8 @@ import AddProperty from './pages/AddProperty.jsx';
 import MyProperties from './pages/MyProperties.jsx';
 import MyOrders from './pages/MyOrders.jsx';
 import Profile from './pages/Profile.jsx';
+import { ForgotPassword, ResetPassword } from './pages/Password.jsx';
+import { About, Faq, Privacy, Terms } from './pages/Info.jsx';
 import { Blog, BlogPost, Contact, NotFound, PaymentResult } from './pages/Misc.jsx';
 
 function ScrollTop() {
@@ -24,7 +26,7 @@ const guard = (el) => <ProtectedRoute>{el}</ProtectedRoute>;
 
 export default function App() {
   const { pathname } = useLocation();
-  const bare = pathname === '/login' || pathname === '/register'; // auth pages have their own layout
+  const bare = ['/login', '/register', '/forgot-password', '/reset-password'].includes(pathname); // auth pages have their own layout
 
   return (
     <>
@@ -40,6 +42,12 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/faq" element={<Faq />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/payment/:result" element={<PaymentResult />} />
 
           <Route path="/wishlist" element={guard(<Wishlist />)} />

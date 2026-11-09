@@ -43,3 +43,8 @@ export const contentApi = {
   subscribe: (email) => api.post('/newsletter', { email }),
   contact: (b) => api.post('/contact', b),
 };
+
+export const passwordApi = {
+  forgot: (email) => api.post('/auth/forgot-password', { email }),
+  reset: (body) => api.post('/auth/reset-password', body),
+};

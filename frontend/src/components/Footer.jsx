@@ -19,6 +19,8 @@ export default function Footer() {
           <h4>{t('quickLinks')}</h4>
           <Link to="/properties">{t('properties')}</Link>
           <Link to="/blog">{t('blog')}</Link>
+          <Link to="/about">About us</Link>
+          <Link to="/faq">FAQ</Link>
           <Link to="/contact">{t('contact')}</Link>
           <Link to="/my/properties/new">{t('postProperty')}</Link>
         </div>
@@ -34,7 +36,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="footer-bottom">© {new Date().getFullYear()} {s?.company_name || 'Bariwala'}. All rights reserved.</div>
+      <div className="footer-bottom">© {new Date().getFullYear()} {s?.company_name || 'Bariwala'}. All rights reserved. · <Link to="/privacy">Privacy</Link> · <Link to="/terms">Terms</Link></div>
     </footer>
   );
 }

@@ -66,6 +66,7 @@ export function Login() {
         <Field label="Password" error={err?.field('password')}>
           <input type="password" required autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         </Field>
+        <div className="forgot"><Link to="/forgot-password">Forgot password?</Link></div>
         <button className="btn btn-primary btn-block" disabled={busy}>{busy ? 'Logging in…' : 'Log in'}</button>
       </form>
     </AuthShell>
