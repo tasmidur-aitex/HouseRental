@@ -48,6 +48,45 @@ class AuthController extends ApiController
         return $this->success($this->session($user, $request), 'Login successful');
     }
 
+    /**
+     * Exchange a Google/Facebook access token (obtained by the React app) for our own token.
+     * POST /auth/social/{provider}  { access_token }
+     */
+    public function social(Request $request, $provider)
+    {
+        if (!in_array($provider, ['google', 'facebook'], true)) {
+            throw ApiException::notFound('Unknown provider.');
+        }
+        $request->validate(['access_token' => 'required|string']);
+
+        try {
+            $info = \Laravel\Socialite\Facades\Socialite::driver($provider)->stateless()->userFromToken($request->input('access_token'));
+        } catch (\Throwable $e) {
+            throw new ApiException('The social login token is invalid or expired.', 401, 'INVALID_SOCIAL_TOKEN');
+        }
+        if (!$info->getEmail()) {
+            throw new ApiException('Your ' . $provider . ' account did not share an email address.', 422, 'EMAIL_REQUIRED');
+        }
+
+        // The provider has verified this email, so an existing account with the same email is the same person.
+        $user = User::where('provider', $provider)->where('provider_id', $info->getId())->first()
+            ?: User::where('email', $info->getEmail())->first();
+
+        if (!$user) {
+            $user = User::create([
+                'name'        => $info->getName() ?: $info->getEmail(),
+                'email'       => $info->getEmail(),
+                'phone'       => null,
+                'password'    => Hash::make(Str::random(40)),
+                'provider'    => $provider,
+                'provider_id' => $info->getId(),
+            ]);
+            $user->forceFill(['email_verified_at' => now()])->save();
+        }
+
+        return $this->success($this->session($user, $request), 'Login successful');
+    }
+
     public function logout(Request $request)
     {
         $this->currentToken($request)->delete();

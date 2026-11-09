@@ -31,6 +31,7 @@ Route::prefix('v1')->namespace('Api\V1')->group(function () {
         Route::middleware('throttle:10,1,auth')->group(function () {
             Route::post('register', 'AuthController@register');
             Route::post('login', 'AuthController@login');
+            Route::post('social/{provider}', 'AuthController@social');
             Route::post('forgot-password', 'AuthController@forgotPassword');
             Route::post('reset-password', 'AuthController@resetPassword');
         });
@@ -49,8 +50,18 @@ Route::prefix('v1')->namespace('Api\V1')->group(function () {
     Route::get('subcities', 'LocationController@subcities');
 
     Route::get('properties', 'PropertyController@index');          // search + filters + pagination
+    Route::get('properties/near', 'PropertyController@near');      // ?lat=&lng=&radius_km=
     Route::get('properties/{id}', 'PropertyController@show');
     Route::get('properties/{id}/nearby', 'PropertyController@nearby');
+
+    Route::post('properties/{id}/inquiries', 'InquiryController@store')->middleware('throttle:10,1,forms');
+    Route::get('reviews', 'ContentController@reviews');
+
+    // SSLCommerz callbacks (the gateway sends the browser / its servers here)
+    Route::post('payments/success', 'PaymentController@callbackSuccess');
+    Route::post('payments/fail', 'PaymentController@callbackFail');
+    Route::post('payments/cancel', 'PaymentController@callbackCancel');
+    Route::post('payments/ipn', 'PaymentController@callbackIpn');
 
     Route::get('blog/posts', 'ContentController@posts');
     Route::get('blog/posts/{id}', 'ContentController@post');
@@ -70,6 +81,10 @@ Route::prefix('v1')->namespace('Api\V1')->group(function () {
         Route::get('my/properties/{id}', 'MyPropertyController@show');
         Route::delete('my/properties/{id}', 'MyPropertyController@destroy');
 
+        Route::post('payments/checkout', 'PaymentController@checkout');
+        Route::get('my/orders', 'MyOrderController@index');
+        Route::get('my/orders/{id}', 'MyOrderController@show');
+
         Route::get('wishlist', 'WishlistController@index');
         Route::post('wishlist/{propertyId}', 'WishlistController@add');
         Route::delete('wishlist/{propertyId}', 'WishlistController@remove');
@@ -83,29 +98,64 @@ Route::prefix('v1')->namespace('Api\V1')->group(function () {
             Route::post('auth/logout', 'AdminAuthController@logout');
             Route::get('auth/me', 'AdminAuthController@me');
 
-            Route::apiResource('cities', 'CityController');
-            Route::apiResource('subcities', 'SubcityController');
-            Route::apiResource('coupons', 'CouponController');
-            Route::apiResource('blog/categories', 'PostCategoryController');
-            Route::apiResource('blog/posts', 'PostController');
+            Route::get('reports/summary', 'ReportController@summary')->middleware('admin.can:reports');
+            Route::get('reports/delivered', 'ReportController@deliveredReport')->middleware('admin.can:reports');
+            Route::get('reports/delivered/export', 'ReportController@exportDelivered')->middleware('admin.can:reports');
 
-            Route::get('properties', 'PropertyController@index');
-            Route::post('properties', 'PropertyController@store');
-            Route::get('properties/{id}', 'PropertyController@show');
-            // multipart PUT is not parsed by PHP, so clients send POST with _method=PUT
-            Route::match(['put', 'patch', 'post'], 'properties/{id}', 'PropertyController@update');
-            Route::delete('properties/{id}', 'PropertyController@destroy');
-            Route::post('properties/{id}/{action}', 'PropertyController@transition')
-                ->where('action', 'approve|cancel|pending|delivery-progress|delivered');
+            Route::middleware('admin.can:places')->group(function () {
+                Route::apiResource('cities', 'CityController');
+                Route::apiResource('subcities', 'SubcityController');
+            });
+            Route::apiResource('coupons', 'CouponController')->middleware('admin.can:coupon');
 
-            Route::get('contacts', 'InboxController@contacts');
-            Route::get('contacts/{id}', 'InboxController@contact');
-            Route::patch('contacts/{id}', 'InboxController@updateContact');
-            Route::delete('contacts/{id}', 'InboxController@deleteContact');
-            Route::get('newsletters', 'InboxController@newsletters');
-            Route::delete('newsletters/{id}', 'InboxController@deleteNewsletter');
-            Route::get('settings', 'InboxController@settings');
-            Route::put('settings', 'InboxController@updateSettings');
+            Route::middleware('admin.can:blogs')->group(function () {
+                Route::apiResource('blog/categories', 'PostCategoryController');
+                Route::apiResource('blog/posts', 'PostController');
+            });
+
+            Route::middleware('admin.can:all_properties')->group(function () {
+                Route::get('properties', 'PropertyController@index');
+                Route::post('properties', 'PropertyController@store');
+                Route::get('properties/{id}', 'PropertyController@show');
+                // multipart PUT is not parsed by PHP, so clients send POST with _method=PUT
+                Route::match(['put', 'patch', 'post'], 'properties/{id}', 'PropertyController@update');
+                Route::delete('properties/{id}', 'PropertyController@destroy');
+                Route::post('properties/{id}/{action}', 'PropertyController@transition')
+                    ->where('action', 'approve|cancel|pending|delivery-progress|delivered');
+            });
+
+            Route::middleware('admin.can:orders')->group(function () {
+                Route::get('orders', 'OrderController@index');
+                Route::get('orders/{id}', 'OrderController@show');
+                Route::delete('orders/{id}', 'OrderController@destroy');
+                Route::get('inquiries', 'InquiryController@index');
+                Route::patch('inquiries/{id}', 'InquiryController@update');
+                Route::delete('inquiries/{id}', 'InquiryController@destroy');
+            });
+
+            Route::middleware('admin.can:contact_messages')->group(function () {
+                Route::get('contacts', 'InboxController@contacts');
+                Route::get('contacts/{id}', 'InboxController@contact');
+                Route::patch('contacts/{id}', 'InboxController@updateContact');
+                Route::delete('contacts/{id}', 'InboxController@deleteContact');
+            });
+            Route::middleware('admin.can:newsletter')->group(function () {
+                Route::get('newsletters', 'InboxController@newsletters');
+                Route::delete('newsletters/{id}', 'InboxController@deleteNewsletter');
+            });
+            Route::middleware('admin.can:site_setting')->group(function () {
+                Route::get('settings', 'InboxController@settings');
+                Route::put('settings', 'InboxController@updateSettings');
+            });
+
+            Route::apiResource('admins', 'ChildAdminController')->middleware('admin.can:user_role');
+
+            Route::middleware('admin.can:database_backup')->group(function () {
+                Route::get('backups', 'BackupController@index');
+                Route::post('backups', 'BackupController@run');
+                Route::get('backups/{name}', 'BackupController@download');
+                Route::delete('backups/{name}', 'BackupController@destroy');
+            });
         });
     });
 });

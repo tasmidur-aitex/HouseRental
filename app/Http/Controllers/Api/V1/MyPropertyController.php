@@ -8,7 +8,10 @@ use App\Model\Admin\Subcity;
 use App\Model\Property;
 use App\Support\ImageUploader;
 use App\Traits\PropertyInput;
+use App\Mail\invoiceMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /** Properties submitted by the logged-in user. New ones start as "pending" until an admin approves. */
 class MyPropertyController extends ApiController
@@ -42,6 +45,13 @@ class MyPropertyController extends ApiController
         $data = $this->storePropertyImages($request, $data);
 
         $property = Property::create($data);
+
+        // Confirmation mail (queued). A mail problem must never lose the submission.
+        try {
+            Mail::to($property->email)->queue(new invoiceMail($property->toArray()));
+        } catch (\Throwable $e) {
+            Log::warning('Property confirmation mail failed: ' . $e->getMessage());
+        }
 
         return $this->created($property->load(['city', 'subcityModel']), 'Property submitted. It will be listed after admin approval.', PropertyResource::class);
     }

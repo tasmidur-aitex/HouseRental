@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Http\Resources\CouponResource;
 use App\Http\Resources\PostCategoryResource;
 use App\Http\Resources\PostResource;
+use App\Http\Resources\ReviewResource;
 use App\Model\Admin\Coupon;
 use App\Model\Admin\Post;
 use App\Model\Admin\Postcategory;
@@ -35,6 +36,14 @@ class ContentController extends ApiController
     public function postCategories(Request $request)
     {
         return $this->paginated(Postcategory::orderBy('id')->paginate($this->perPage($request, 50)), PostCategoryResource::class);
+    }
+
+    /** Messages the admin marked "show as review". */
+    public function reviews(Request $request)
+    {
+        $query = Contact::where('review', 1)->orderBy('id', 'desc');
+
+        return $this->paginated($query->paginate($this->perPage($request, 10)), ReviewResource::class);
     }
 
     public function settings()

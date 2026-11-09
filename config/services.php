@@ -36,10 +36,10 @@ return [
         'redirect' => 'http://localhost/HouseRental/callback/google',
     ],
 
-    // 'facebook' => [
-    //     'client_id' => 'xxxx',
-    //     'client_secret' => 'xxx',
-    //     'redirect' => 'http://localhost/HouseRental/callback/facebook',
-    // ],
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT', 'http://localhost/HouseRental/callback/facebook'),
+    ],
 
 ];

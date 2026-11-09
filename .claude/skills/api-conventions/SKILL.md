@@ -40,4 +40,7 @@ The API lives under `/api/v1` (`routes/api.php`, controllers in `app/Http/Contro
 - Property status: 0 pending, 1 published, 2 delivery_progress, 3 delivered, 4 cancelled. Public endpoints only expose 1 and 2 (`Property::public()`).
 - Property images are stored as `public/media/...` relative paths (legacy Blade format); expose them with `url($path)`. Use `App\Support\ImageUploader`.
 - Multipart updates: clients send `POST` with `_method=PUT`.
+- Orders are SSLCommerz payments for a listing (`App\Order`, statuses Pending/Complete/Failed/Canceled; the legacy column is `property_Id`, use `->property_id` accessor). Checkout returns `payment_url`; gateway callbacks `/payments/*` verify against the amount stored on our order and redirect to `FRONTEND_URL`.
+- Child admins: `admins.type = 2` with per-section flags; guard routes with `->middleware('admin.can:<column>')`.
+- Do not name controller actions `success`, `created`, `error`, `paginated`, `deleted` (they clash with `ApiResponder`).
 - Do not write test cases unless the user asks for them.

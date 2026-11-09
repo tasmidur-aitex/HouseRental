@@ -36,6 +36,11 @@ class PropertyResource extends JsonResource
             'details'         => $this->details,
             'video'           => $this->video,
             'map_link'        => $this->map_link,
+            'latitude'        => $this->latitude === null ? null : (float) $this->latitude,
+            'longitude'       => $this->longitude === null ? null : (float) $this->longitude,
+            'distance_km'     => $this->when(isset($this->distance_km), function () {
+                return round((float) $this->distance_km, 2);
+            }),
             'city'            => new CityResource($this->whenLoaded('city')),
             'subcity'         => new SubcityResource($this->whenLoaded('subcityModel')),
             'city_id'         => $this->city_id === null ? null : (int) $this->city_id,

@@ -26,9 +26,9 @@ trait ApiResponder
         return ApiResponse::noContent($message);
     }
 
-    protected function paginated(LengthAwarePaginator $paginator, ?string $resource = null, string $message = 'OK')
+    protected function paginated(LengthAwarePaginator $paginator, ?string $resource = null, string $message = 'OK', array $extraMeta = [])
     {
-        return ApiResponse::paginated($paginator, $resource, $message);
+        return ApiResponse::paginated($paginator, $resource, $message, $extraMeta);
     }
 
     protected function error(string $message, int $status = 400, string $code = 'ERROR', $errors = null)
