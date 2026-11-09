@@ -23,6 +23,8 @@ export const propertyApi = {
   get: (id) => api.get(`/properties/${id}`),
   nearby: (id) => api.get(`/properties/${id}/nearby`),
   inquire: (id, b) => api.post(`/properties/${id}/inquiries`, b),
+  visitSlots: (id, date) => api.get(`/properties/${id}/visit-slots`, { date }),
+  bookVisit: (id, b) => api.post(`/properties/${id}/visits`, b),
 };
 
 export const myApi = {
@@ -30,6 +32,8 @@ export const myApi = {
   createProperty: (formData) => api.post('/my/properties', formData),
   deleteProperty: (id) => api.del(`/my/properties/${id}`),
   orders: (query) => api.get('/my/orders', query),
+  visits: (query) => api.get('/my/visits', query),
+  cancelVisit: (id) => api.post(`/my/visits/${id}/cancel`),
   checkout: (b) => api.post('/payments/checkout', b),
   wishlist: (query) => api.get('/wishlist', query),
   wishAdd: (id) => api.post(`/wishlist/${id}`),

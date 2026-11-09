@@ -55,6 +55,8 @@ Route::prefix('v1')->namespace('Api\V1')->group(function () {
     Route::get('properties/{id}/nearby', 'PropertyController@nearby');
 
     Route::post('properties/{id}/inquiries', 'InquiryController@store')->middleware('throttle:10,1,forms');
+    Route::get('properties/{id}/visit-slots', 'VisitController@slots');
+    Route::post('properties/{id}/visits', 'VisitController@store')->middleware('throttle:10,1,forms');
     Route::get('reviews', 'ContentController@reviews');
 
     // SSLCommerz callbacks (the gateway sends the browser / its servers here)
@@ -80,6 +82,9 @@ Route::prefix('v1')->namespace('Api\V1')->group(function () {
         Route::post('my/properties', 'MyPropertyController@store');
         Route::get('my/properties/{id}', 'MyPropertyController@show');
         Route::delete('my/properties/{id}', 'MyPropertyController@destroy');
+
+        Route::get('my/visits', 'VisitController@mine');
+        Route::post('my/visits/{id}/cancel', 'VisitController@cancel');
 
         Route::post('payments/checkout', 'PaymentController@checkout');
         Route::get('my/orders', 'MyOrderController@index');
@@ -128,6 +133,9 @@ Route::prefix('v1')->namespace('Api\V1')->group(function () {
                 Route::get('orders', 'OrderController@index');
                 Route::get('orders/{id}', 'OrderController@show');
                 Route::delete('orders/{id}', 'OrderController@destroy');
+                Route::get('visits', 'VisitController@index');
+                Route::patch('visits/{id}', 'VisitController@update');
+                Route::delete('visits/{id}', 'VisitController@destroy');
                 Route::get('inquiries', 'InquiryController@index');
                 Route::patch('inquiries/{id}', 'InquiryController@update');
                 Route::delete('inquiries/{id}', 'InquiryController@destroy');

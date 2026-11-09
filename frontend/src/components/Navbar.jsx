@@ -59,6 +59,7 @@ export default function Navbar() {
                   </div>
                   <Link to="/wishlist" onClick={close}>{t('wishlist')}</Link>
                   <Link to="/my/properties" onClick={close}>{t('myProperties')}</Link>
+                  <Link to="/my/visits" onClick={close}>My visits</Link>
                   <Link to="/my/orders" onClick={close}>{t('myOrders')}</Link>
                   <Link to="/profile" onClick={close}>{t('profile')}</Link>
                   <button onClick={handleLogout}>{t('logout')}</button>

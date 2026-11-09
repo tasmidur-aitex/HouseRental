@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { useLang } from '../context/LangContext.jsx';
 import { useCompare } from '../context/CompareContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
+import VisitForm from '../components/VisitForm.jsx';
 import PropertyCard from '../components/PropertyCard.jsx';
 import { ErrorBox, Field, Loader } from '../components/Ui.jsx';
 import { Icon } from '../components/Icons.jsx';
@@ -61,6 +62,7 @@ export default function PropertyDetails() {
   const navigate = useNavigate();
   const { has, toggle } = useWishlist();
   const [active, setActive] = useState(0);
+  const [tab, setTab] = useState('visit');
   const { data: p, loading, error } = useFetch(() => propertyApi.get(id), [id]);
   const nearby = useFetch(() => propertyApi.nearby(id), [id]);
   const compare = useCompare();
@@ -159,7 +161,13 @@ export default function PropertyDetails() {
           )}
         </div>
 
-        <aside><InquiryForm id={p.id} /></aside>
+        <aside>
+          <div className="tabs-mini" role="tablist">
+            <button role="tab" aria-selected={tab === 'visit'} className={tab === 'visit' ? 'on' : ''} onClick={() => setTab('visit')}>Book a visit</button>
+            <button role="tab" aria-selected={tab === 'info'} className={tab === 'info' ? 'on' : ''} onClick={() => setTab('info')}>Ask a question</button>
+          </div>
+          {tab === 'visit' ? <VisitForm propertyId={p.id} /> : <InquiryForm id={p.id} />}
+        </aside>
       </div>
 
       {nearby.data?.length > 0 && (

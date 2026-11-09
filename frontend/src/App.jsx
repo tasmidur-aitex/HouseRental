@@ -10,6 +10,7 @@ import { Login, Register } from './pages/Auth.jsx';
 import Wishlist from './pages/Wishlist.jsx';
 import AddProperty from './pages/AddProperty.jsx';
 import MyProperties from './pages/MyProperties.jsx';
+import MyVisits from './pages/MyVisits.jsx';
 import MyOrders from './pages/MyOrders.jsx';
 import Profile from './pages/Profile.jsx';
 import { ForgotPassword, ResetPassword } from './pages/Password.jsx';
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/wishlist" element={guard(<Wishlist />)} />
           <Route path="/my/properties" element={guard(<MyProperties />)} />
           <Route path="/my/properties/new" element={guard(<AddProperty />)} />
+          <Route path="/my/visits" element={guard(<MyVisits />)} />
           <Route path="/my/orders" element={guard(<MyOrders />)} />
           <Route path="/profile" element={guard(<Profile />)} />
           <Route path="*" element={<NotFound />} />
