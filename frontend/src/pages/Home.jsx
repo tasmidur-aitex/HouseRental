@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import PropertyCard from '../components/PropertyCard.jsx';
 import { Loader, SectionHead } from '../components/Ui.jsx';
 import { Icon } from '../components/Icons.jsx';
+import HeroArt from '../components/HeroArt.jsx';
 import RecentlyViewed from '../components/RecentlyViewed.jsx';
 import { CATEGORIES } from './Discover.jsx';
 import { usePageMeta } from '../hooks/usePageMeta.js';
@@ -29,23 +30,26 @@ function PropertyRow({ title, query }) {
 
 export default function Home() {
   const { t } = useLang();
-  usePageMeta('House rental made simple', 'Find verified homes, flats, offices and shops for rent. Search, save, compare and book a visit.');
+  usePageMeta('Find your next home', 'Find verified homes, flats, offices and shops for rent. Search, save, compare and book a visit.');
   const navigate = useNavigate();
   const toast = useToast();
-  const [q, setQ] = useState('');
+  const [subId, setSubId] = useState('');
+  const [category, setCategory] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [cityId, setCityId] = useState('');
-  const [purpose, setPurpose] = useState('');
   const [email, setEmail] = useState('');
-  const cities = useFetch(() => placesApi.cities(), []);
+  const cities = useFetch(() => placesApi.cities({ with_subcities: 1 }), []);
+  const areas = cities.data?.find((c) => String(c.id) === String(cityId))?.subcities || [];
   const reviews = useFetch(() => contentApi.reviews(), []);
   const settings = useFetch(() => contentApi.settings(), []);
 
   const onSearch = (e) => {
     e.preventDefault();
     const p = new URLSearchParams();
-    if (q) p.set('q', q);
     if (cityId) p.set('city_id', cityId);
-    if (purpose) p.set('purpose', purpose);
+    if (subId) p.set('subcity_id', subId);
+    if (category) p.set('category', category);
+    if (maxPrice) p.set('max_price', maxPrice);
     navigate(`/properties?${p.toString()}`);
   };
 
@@ -67,27 +71,56 @@ export default function Home() {
   return (
     <>
       <section className="hero">
-        <div className="container hero-inner">
-          <h1>{t('heroTitle')}</h1>
-          <p>{t('heroSub')}</p>
-          <form className="hero-search" onSubmit={onSearch}>
-            <div className="hero-field grow">
-              <Icon.Search />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('searchPlaceholder')} aria-label="Search" />
+        <div className="hero-bg" aria-hidden="true">
+          <HeroArt />
+          <div className="hero-shade" />
+        </div>
+        <div className="container hero-grid">
+          <div className="hero-inner">
+            <span className="hero-pill">{t('heroKicker')}</span>
+            <h1>{t('heroTitle')}<span>{t('heroTitle2')}</span></h1>
+            <p>{t('heroSub')}</p>
+            <Link to="/properties" className="btn hero-cta">{t('search')} →</Link>
+          </div>
+
+          <form className="hero-card" onSubmit={onSearch}>
+            <h2><Icon.Search /> {t('heroCardTitle')}</h2>
+            <p className="muted">{t('heroCardSub')}</p>
+            <div className="hero-card-grid">
+              <label>{t('cityLabel')}
+                <select value={cityId} onChange={(e) => { setCityId(e.target.value); setSubId(''); }}>
+                  <option value="">{t('allCities')}</option>
+                  {cities.data?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </label>
+              <label>{t('areaLabel')}
+                <select value={subId} onChange={(e) => setSubId(e.target.value)} disabled={!cityId}>
+                  <option value="">{t('allAreas')}</option>
+                  {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+              </label>
+              <label>{t('typeLabel')}
+                <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                  <option value="">{t('allTypes')}</option>
+                  {Object.values(CATEGORIES).map((c) => <option key={c.name} value={c.name}>{c.name}</option>)}
+                </select>
+              </label>
+              <label>{t('maxRent')}
+                <input type="number" min="0" inputMode="numeric" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder="15000" />
+              </label>
             </div>
-            <select value={cityId} onChange={(e) => setCityId(e.target.value)} aria-label="City">
-              <option value="">{t('allCities')}</option>
-              {cities.data?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            <select value={purpose} onChange={(e) => setPurpose(e.target.value)} aria-label="Purpose">
-              <option value="">Rent / Sale</option>
-              <option value="Rent">Rent</option>
-              <option value="Sale">Sale</option>
-            </select>
-            <button className="btn btn-primary" type="submit">{t('search')}</button>
+            <button className="btn btn-primary btn-block" type="submit"><Icon.Search /> {t('search')}</button>
           </form>
         </div>
       </section>
+
+      <div className="ticker" aria-hidden="true">
+        <div className="ticker-track">
+          {[0, 1].map((i) => (
+            <span key={i}>Verified listings ✦ Zero brokerage worries ✦ Book a visit online ✦ Flats · Offices · Shops · Bachelor seats ✦ Smart Tolet — your next home, sorted ✦&nbsp;</span>
+          ))}
+        </div>
+      </div>
 
       {stats.length > 0 && (
         <div className="container">

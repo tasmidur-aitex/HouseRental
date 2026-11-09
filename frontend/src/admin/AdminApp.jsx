@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Logo from '../components/Logo.jsx';
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AdminProvider, useAdmin } from './AdminContext.jsx';
 import { Loader } from '../components/Ui.jsx';
@@ -47,7 +48,7 @@ function Shell() {
   return (
     <div className="a-shell">
       <aside className={`a-side ${open ? 'open' : ''}`}>
-        <Link to="/admin" className="a-brand"><span className="brand-mark"><Icon.Home /></span> Bariwala <small>admin</small></Link>
+        <Link to="/admin" className="a-brand"><Logo light /> <small>admin</small></Link>
         <nav>
           {NAV.filter(([, , perm]) => allowed(perm)).map(([to, label]) => (
             <NavLink key={to} to={to} end={to === '/admin'} onClick={() => setOpen(false)}>{label}</NavLink>

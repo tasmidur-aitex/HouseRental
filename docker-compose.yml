@@ -1,9 +1,9 @@
-# One command, public URL:
-#     NGROK_AUTHTOKEN=<your token> docker compose up --build
-# Start-up order: db -> backend -> ngrok -> frontend
-#   https://<dynamic>.ngrok-free.app           website
-#   https://<dynamic>.ngrok-free.app/backend   Laravel API  (/backend/api/v1/...)
-# Everything else (database, app key, admin password, public URL) is generated automatically.
+# One command:
+#     docker compose up --build
+# Start-up order: db -> backend -> frontend
+#   http://localhost:8080           website
+#   http://localhost:8080/backend   Laravel API  (/backend/api/v1/...)
+# Everything else (database, app key, admin password) is generated automatically.
 
 name: houserental
 
@@ -49,12 +49,11 @@ services:
       SESSION_DRIVER: file
       QUEUE_CONNECTION: sync
       MAIL_DRIVER: log                    # mails are written to the log; set real SMTP to send them
-      TRUSTED_PROXIES: "*"                # requests arrive through nginx + ngrok
+      TRUSTED_PROXIES: "*"                # requests arrive through nginx
       URL_PREFIX: /backend                # the API is published under <site>/backend
-      PUBLIC_URL_FILE: /shared/public_url # written by the frontend container once ngrok is up
       SEED_DEMO: ${SEED_DEMO:-true}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}  # empty = generated once and printed in the logs
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-123456}  # empty = generated once and printed in the logs
       STORE_ID: ${STORE_ID:-}
       STORE_PASSWORD: ${STORE_PASSWORD:-}
       API_DOMAIN_URL: ${API_DOMAIN_URL:-https://sandbox.sslcommerz.com}
@@ -64,44 +63,20 @@ services:
     volumes:
       - backend_storage:/var/www/html/storage
       - media:/var/www/html/public/media
-      - shared:/shared:ro
     restart: unless-stopped
 
-  # 3) ngrok tunnel -> the web container (which serves the site and proxies /backend) -----
-  ngrok:
-    image: ngrok/ngrok:latest
-    command: ["http", "frontend:80", "--log=stdout", "--config=/etc/ngrok/ngrok.yml"]
-    environment:
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:?Set NGROK_AUTHTOKEN (free at https://dashboard.ngrok.com/get-started/your-authtoken)}
-    volumes:
-      - ./docker/ngrok/ngrok.yml:/etc/ngrok/ngrok.yml:ro
-    ports:
-      - "127.0.0.1:4040:4040"            # ngrok inspector
-    depends_on:
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-
-  # 4) frontend (React + nginx) -----------------------------------------------------
+  # 3) frontend (React + nginx) -----------------------------------------------------
   frontend:
     build:
       context: ./frontend
     depends_on:
       backend:
         condition: service_healthy
-      ngrok:
-        condition: service_started
-    environment:
-      NGROK_API: http://ngrok:4040/api/tunnels
-      PUBLIC_URL_FILE: /shared/public_url
-    volumes:
-      - shared:/shared
     ports:
-      - "8080:80"                        # local access without ngrok
+      - "8080:80"
     restart: unless-stopped
 
 volumes:
   db_data:
   backend_storage:
   media:
-  shared:

@@ -1,23 +1,63 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { Field } from '../components/Ui.jsx';
 import { Icon } from '../components/Icons.jsx';
+import HeroArt from '../components/HeroArt.jsx';
+
+// Ad slides. Drop Gemini-made images at public/banners/login-1.svg ... login-3.jpg (see docs/GEMINI_BANNER_BRIEF.md);
+// until then the animated skyline shows behind the text.
+const ADS = [
+  { img: '/banners/login-1.svg', tag: 'Find', title: 'Your next home is a few clicks away', sub: 'Flats, family homes, sublets and bachelor seats across Bangladesh.' },
+  { img: '/banners/login-2.svg', tag: 'List', title: 'Own a property? List it in minutes', sub: 'Reach thousands of renters with a reviewed, trusted listing.' },
+  { img: '/banners/login-3.svg', tag: 'Visit', title: 'Book a visit. Skip the guesswork', sub: 'Pick a time slot and see the place before you decide.' },
+];
+
+function AdSlider() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setI((n) => (n + 1) % ADS.length), 5000);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <>
+      <div className="ad-slides" aria-hidden="true">
+        {ADS.map((a, k) => (
+          <img key={a.img} src={a.img} alt="" className={k === i ? 'on' : ''} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        ))}
+      </div>
+      <div className="auth-side-inner">
+        <span className="brand-mark big"><Icon.Home width={28} height={28} /></span>
+        {ADS.map((a, k) => (
+          <div key={a.tag} className={`ad-copy ${k === i ? 'on' : ''}`}>
+            <span className="hero-pill">{a.tag}</span>
+            <h2>{a.title}</h2>
+            <p>{a.sub}</p>
+          </div>
+        ))}
+        <div className="ad-dots">
+          {ADS.map((a, k) => <button key={a.tag} type="button" className={k === i ? 'on' : ''} onClick={() => setI(k)} aria-label={`Slide ${k + 1}`} />)}
+        </div>
+        <ul>
+          <li><Icon.Check /> Save the places you love</li>
+          <li><Icon.Check /> List your own property</li>
+          <li><Icon.Check /> Pay securely online</li>
+        </ul>
+      </div>
+    </>
+  );
+}
 
 function AuthShell({ title, subtitle, children, footer }) {
   return (
     <div className="auth-page">
       <div className="auth-side">
-        <div className="auth-side-inner">
-          <span className="brand-mark big"><Icon.Home width={28} height={28} /></span>
-          <h2>Your next home is a few clicks away</h2>
-          <ul>
-            <li><Icon.Check /> Save the places you love</li>
-            <li><Icon.Check /> List your own property</li>
-            <li><Icon.Check /> Pay securely online</li>
-          </ul>
+        <div className="hero-bg" aria-hidden="true">
+          <HeroArt />
+          <div className="hero-shade auth-shade" />
         </div>
+        <AdSlider />
       </div>
       <div className="auth-main">
         <div className="auth-card">

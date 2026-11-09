@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Logo from './Logo.jsx';
 import { useLang } from '../context/LangContext.jsx';
 import { useFetch } from '../hooks/useFetch.js';
 import { contentApi } from '../api/index.js';
@@ -12,7 +13,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="container footer-grid">
         <div>
-          <div className="brand brand-light"><span className="brand-mark"><Icon.Home /></span>{s?.company_name || 'Bariwala'}</div>
+          <div className="brand brand-light"><Logo light /></div>
           <p className="muted-light">{t('footerAbout')}</p>
         </div>
         <div>
@@ -39,7 +40,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="footer-bottom">© {new Date().getFullYear()} {s?.company_name || 'Bariwala'}. All rights reserved. · <Link to="/privacy">Privacy</Link> · <Link to="/terms">Terms</Link></div>
+      <div className="footer-bottom">© {new Date().getFullYear()} {s?.company_name || 'Smart Tolet'}. All rights reserved. · <Link to="/privacy">Privacy</Link> · <Link to="/terms">Terms</Link></div>
     </footer>
   );
 }

@@ -5,7 +5,8 @@ import { useFetch } from '../hooks/useFetch.js';
 import { useLang } from '../context/LangContext.jsx';
 import PropertyCard from '../components/PropertyCard.jsx';
 import Pagination from '../components/Pagination.jsx';
-import { EmptyState, ErrorBox, Loader, PageHeader } from '../components/Ui.jsx';
+import HeroArt from '../components/HeroArt.jsx';
+import { EmptyState, ErrorBox, Loader } from '../components/Ui.jsx';
 
 const FILTER_KEYS = ['q', 'city_id', 'subcity_id', 'purpose', 'category', 'bedroom', 'bathroom', 'min_price', 'max_price', 'badge', 'sort'];
 
@@ -46,7 +47,17 @@ export default function Properties() {
 
   return (
     <>
-      <PageHeader title={t('properties')} subtitle={meta ? `${meta.total} results` : ' '} />
+      <section className="hero hero-compact">
+        <div className="hero-bg" aria-hidden="true">
+          <HeroArt />
+          <div className="hero-shade" />
+        </div>
+        <div className="container hero-inner">
+          <span className="hero-pill">{t('heroKicker')}</span>
+          <h1>{t('properties')}</h1>
+          <p>{meta ? `${meta.total} results` : t('heroSub')}</p>
+        </div>
+      </section>
       <div className="container listing">
         <button className="btn btn-outline filter-toggle" onClick={() => setShowFilters(!showFilters)}>{t('filters')}</button>
 

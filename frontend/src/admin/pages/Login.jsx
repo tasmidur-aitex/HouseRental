@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LogoMark } from '../../components/Logo.jsx';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAdmin } from '../AdminContext.jsx';
 import { Field } from '../../components/Ui.jsx';
@@ -30,9 +31,9 @@ export default function AdminLogin() {
   return (
     <div className="a-login">
       <form className="card a-login-card" onSubmit={submit}>
-        <span className="brand-mark big dark"><Icon.Home width={26} height={26} /></span>
+        <span className="login-logo"><LogoMark size={56} /></span>
         <h1>Admin sign in</h1>
-        <p className="muted">Bariwala control panel</p>
+        <p className="muted">Smart Tolet control panel</p>
         {err && !err.errors && <div className="alert alert-error">{err.message}</div>}
         <Field label="Email" error={err?.field('email')}><input type="email" required autoFocus autoComplete="username" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
         <Field label="Password" error={err?.field('password')}><input type="password" required autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></Field>

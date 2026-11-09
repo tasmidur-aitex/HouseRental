@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useLang } from '../context/LangContext.jsx';
 import { useCompare } from '../context/CompareContext.jsx';
 import { Icon } from './Icons.jsx';
+import Logo from './Logo.jsx';
 import { initials } from '../utils/format.js';
 
 export default function Navbar() {
@@ -28,8 +29,7 @@ export default function Navbar() {
     <header className="navbar">
       <div className="container nav-inner">
         <Link to="/" className="brand" onClick={close}>
-          <span className="brand-mark"><Icon.Home /></span>
-          Bariwala
+          <Logo />
         </Link>
 
         <nav className={`nav-links ${open ? 'open' : ''}`}>

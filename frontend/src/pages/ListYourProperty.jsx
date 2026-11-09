@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { PageHeader } from '../components/Ui.jsx';
+import HeroArt from '../components/HeroArt.jsx';
 import { Icon } from '../components/Icons.jsx';
 import { usePageMeta } from '../hooks/usePageMeta.js';
 
@@ -20,6 +20,10 @@ export default function ListYourProperty() {
   return (
     <>
       <section className="hero hero-sm">
+        <div className="hero-bg" aria-hidden="true">
+          <HeroArt />
+          <div className="hero-shade" />
+        </div>
         <div className="container hero-inner">
           <h1>List your property in minutes</h1>
           <p>Reach renters across the city with a reviewed, trusted listing.</p>

@@ -90,10 +90,11 @@ main { min-height: 70vh; }
 
 /* ---------- Hero ---------- */
 .hero {
-  background: radial-gradient(1200px 400px at 85% -10%, rgba(20,184,166,.35), transparent 60%),
-              linear-gradient(135deg, #0b3b3a 0%, #0f766e 55%, #14a89b 100%);
+  background: linear-gradient(135deg, #064e3b 0%, #0f766e 55%, #15803d 100%);
   color: #fff; padding: 84px 0 96px;
 }
+.hero-kicker { display: inline-block; color: #27ff02; font-weight: 700; margin-bottom: 14px; text-shadow: 0 0 10px rgba(39,255,2,.45); }
+.hero h1 span { display: block; color: #fde047; }
 .hero h1 { color: #fff; font-size: clamp(2rem, 5vw, 3.2rem); max-width: 720px; letter-spacing: -.02em; }
 .hero p { color: #cdeeea; font-size: 1.15rem; max-width: 560px; margin-bottom: 30px; }
 .hero-search { display: flex; align-items: center; gap: 10px; background: #fff; padding: 10px; border-radius: 16px; box-shadow: var(--shadow-lg); max-width: 880px; }
@@ -405,3 +406,69 @@ textarea { resize: vertical; }
 .side-card { position: static; }
 aside { position: sticky; top: 86px; }
 @media (max-width: 1020px) { aside { position: static; } }
+
+/* ---------- Smart Tolet brand + animated banner ---------- */
+.brand-logo { display: inline-flex; align-items: center; gap: 10px; }
+.brand-text { font-weight: 800; letter-spacing: -.02em; }
+.brand-text b { color: var(--primary); }
+.brand-logo.light .brand-text { color: #fff; }
+.brand-logo.light .brand-text b { color: #fde047; }
+.logo-mark { flex: none; filter: drop-shadow(0 2px 6px rgba(15,118,110,.35)); }
+.logo-sign { transform-box: fill-box; transform-origin: 50% 0; animation: swing 3.2s ease-in-out infinite; }
+.login-logo { display: block; margin-bottom: 12px; text-align: center; }
+
+.hero { position: relative; overflow: hidden; padding: 64px 0 72px; background: #064e3b; }
+.hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.hero-art { position: absolute; inset: 0; width: 100%; height: 100%; animation: heroZoom 24s ease-in-out infinite alternate; }
+.hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6,78,59,.95) 0%, rgba(6,78,59,.82) 38%, rgba(6,78,59,.15) 70%, rgba(6,78,59,0) 100%); }
+.hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px; align-items: center; }
+.hero-pill { display: inline-block; background: #fde047; color: #064e3b; font-weight: 700; padding: 7px 16px; border-radius: 999px; margin-bottom: 16px; animation: fadeUp .7s both; }
+.hero h1 { color: #fff; font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.15; max-width: 640px; animation: fadeUp .7s .1s both; }
+.hero h1 span { display: block; color: #fde047; }
+.hero p { color: #e7f6ef; font-size: 1.1rem; max-width: 520px; margin: 16px 0 24px; animation: fadeUp .7s .2s both; }
+.hero-cta { background: #fde047; color: #064e3b; font-weight: 700; animation: fadeUp .7s .3s both, pulse 2.4s 1.2s infinite; }
+.hero-card { background: #fff; border-radius: 18px; padding: 22px; box-shadow: var(--shadow-lg); animation: fadeUp .8s .2s both; }
+.hero-card h2 { display: flex; align-items: center; gap: 8px; font-size: 1.25rem; color: var(--ink); margin: 0 0 2px; }
+.hero-card h2 svg { color: var(--primary); }
+.hero-card .muted { margin: 0 0 14px; font-size: .9rem; color: var(--muted); max-width: none; }
+.hero-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.hero-card label { display: grid; gap: 4px; font-size: .8rem; font-weight: 600; color: var(--ink); }
+.hero-card select, .hero-card input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: inherit; background: #fff; color: var(--ink); }
+.win { fill: #8fb6c9; opacity: .75; }
+.win.lit { fill: #fde68a; animation: twinkle 4.5s ease-in-out infinite; }
+.cloud.c1 { animation: cloudMove 60s linear infinite; }
+.cloud.c2 { animation: cloudMove 90s linear -30s infinite; }
+
+.ticker { background: #064e3b; color: #fde047; overflow: hidden; white-space: nowrap; font-weight: 600; font-size: .9rem; padding: 9px 0; }
+.ticker-track { display: inline-flex; animation: marquee 28s linear infinite; }
+.ticker-track span { padding-right: 24px; }
+
+@keyframes heroZoom { to { transform: scale(1.06) translateX(-1%); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(253,224,71,.6); } 50% { box-shadow: 0 0 0 12px rgba(253,224,71,0); } }
+@keyframes twinkle { 0%, 100% { opacity: .95; } 50% { opacity: .35; } }
+@keyframes cloudMove { from { transform: translateX(-200px); } to { transform: translateX(1700px); } }
+@keyframes marquee { to { transform: translateX(-50%); } }
+@keyframes swing { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } .hero-shade { background: rgba(6,78,59,.82); } }
+@media (prefers-reduced-motion: reduce) { .hero-art, .hero-pill, .hero h1, .hero p, .hero-cta, .hero-card, .win, .cloud, .ticker-track, .logo-sign { animation: none; } }
+
+.hero-compact { padding: 44px 0 52px; }
+.hero-compact h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.hero-compact p { margin: 8px 0 0; }
+.hero-sm .hero-inner, .hero-compact .hero-inner { position: relative; z-index: 2; }
+.auth-side { position: relative; overflow: hidden; }
+.auth-side-inner { position: relative; z-index: 2; }
+.auth-shade { background: rgba(6,78,59,.78); }
+
+.ad-slides { position: absolute; inset: 0; z-index: 1; }
+.ad-slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity 1s, transform 6s linear; }
+.ad-slides img.on { opacity: 1; transform: scale(1); }
+.ad-slides::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,78,59,.35), rgba(6,78,59,.85)); }
+.ad-copy { display: none; }
+.ad-copy.on { display: block; animation: fadeUp .7s both; }
+.ad-copy p { color: #e7f6ef; margin: 10px 0 0; }
+.ad-dots { display: flex; gap: 8px; margin-top: 22px; }
+.ad-dots button { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 999px; background: rgba(255,255,255,.45); cursor: pointer; transition: width .3s, background .3s; }
+.ad-dots button.on { width: 28px; background: #fde047; }
+@media (prefers-reduced-motion: reduce) { .ad-slides img, .ad-copy.on { animation: none; transition: none; } }

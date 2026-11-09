@@ -18,7 +18,7 @@ export function About() {
       <PageHeader title="About us" subtitle="Making renting simple, transparent and stress-free" />
       <div className="container narrow section">
         <p className="lead">
-          {s?.company_name || 'Bariwala'} is an online house rental platform. Landlords list their properties, our team reviews each
+          {s?.company_name || 'Smart Tolet'} is an online house rental platform. Landlords list their properties, our team reviews each
           listing, and renters browse verified homes, save favourites and get in touch, all in one place.
         </p>
 
