@@ -1,0 +1,45 @@
+import { api } from './client.js';
+
+// One function per endpoint so pages never build URLs by hand.
+export const authApi = {
+  login: (b) => api.post('/auth/login', b),
+  register: (b) => api.post('/auth/register', b),
+  logout: () => api.post('/auth/logout'),
+  me: () => api.get('/auth/me'),
+  updateProfile: (b) => api.put('/auth/profile', b),
+  changePassword: (b) => api.put('/auth/password', b),
+  forgot: (b) => api.post('/auth/forgot-password', b),
+  social: (provider, access_token) => api.post(`/auth/social/${provider}`, { access_token }),
+};
+
+export const placesApi = {
+  cities: (query) => api.get('/cities', { per_page: 100, ...query }),
+  subcities: (city_id) => api.get('/subcities', { city_id, per_page: 100 }),
+};
+
+export const propertyApi = {
+  list: (query) => api.get('/properties', query),
+  get: (id) => api.get(`/properties/${id}`),
+  nearby: (id) => api.get(`/properties/${id}/nearby`),
+  inquire: (id, b) => api.post(`/properties/${id}/inquiries`, b),
+};
+
+export const myApi = {
+  properties: (query) => api.get('/my/properties', query),
+  createProperty: (formData) => api.post('/my/properties', formData),
+  deleteProperty: (id) => api.del(`/my/properties/${id}`),
+  orders: (query) => api.get('/my/orders', query),
+  checkout: (b) => api.post('/payments/checkout', b),
+  wishlist: (query) => api.get('/wishlist', query),
+  wishAdd: (id) => api.post(`/wishlist/${id}`),
+  wishRemove: (id) => api.del(`/wishlist/${id}`),
+};
+
+export const contentApi = {
+  posts: (query) => api.get('/blog/posts', query),
+  post: (id) => api.get(`/blog/posts/${id}`),
+  settings: () => api.get('/settings'),
+  reviews: () => api.get('/reviews', { per_page: 6 }),
+  subscribe: (email) => api.post('/newsletter', { email }),
+  contact: (b) => api.post('/contact', b),
+};
