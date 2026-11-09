@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext.jsx';
 import { useAdmin } from '../AdminContext.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { ErrorBox, Loader } from '../../components/Ui.jsx';
-import { RowActions, Table, Tabs } from '../components/AdminUi.jsx';
+import { PageHead, RowActions, Table, Tabs } from '../components/AdminUi.jsx';
 import { dateText } from '../../utils/format.js';
 
 function useList(endpoint, deps = []) {
@@ -80,7 +80,7 @@ export default function Inbox() {
 
   return (
     <>
-      <div className="a-head"><h1>Inbox</h1></div>
+      <PageHead title="Inbox" subtitle="Property requests, contact messages and newsletter subscribers." />
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
       {tab === 'inquiries' && <Panel list={inquiries} columns={inquiryCols} empty="No property requests." />}
       {tab === 'contacts' && <Panel list={contacts} columns={contactCols} empty="No messages." />}

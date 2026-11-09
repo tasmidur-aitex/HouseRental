@@ -4,7 +4,7 @@ import { useFetch } from '../../hooks/useFetch.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { ErrorBox, Loader } from '../../components/Ui.jsx';
-import { RowActions, Table, Tabs, Toolbar } from '../components/AdminUi.jsx';
+import { PageHead, RowActions, Table, Tabs, Toolbar } from '../components/AdminUi.jsx';
 import { prettyDate, prettyTime, VISIT_TONE } from '../../pages/MyVisits.jsx';
 
 const TABS = [['', 'All'], ['pending', 'Pending'], ['confirmed', 'Confirmed'], ['completed', 'Completed'], ['cancelled', 'Cancelled']];
@@ -46,7 +46,7 @@ export default function Visits() {
 
   return (
     <>
-      <div className="a-head"><h1>Visit bookings</h1></div>
+      <PageHead title="Visit bookings" subtitle="Confirm or cancel the visits people have requested." />
       <Tabs tabs={TABS} value={status} onChange={(v) => { setStatus(v); setPage(1); }} />
       <Toolbar>
         <label className="inline-field">Date <input type="date" value={date} onChange={(e) => { setDate(e.target.value); setPage(1); }} /></label>

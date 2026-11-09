@@ -1,12 +1,31 @@
 import { useEffect, useState } from 'react';
 import { Field, Modal } from '../../components/Ui.jsx';
+import { Icon } from '../../components/Icons.jsx';
 
-export function StatCard({ label, value, tone = 'teal', hint }) {
+/** Page title row: heading + one-line description on the left, actions on the right. */
+export function PageHead({ title, subtitle, children }) {
   return (
-    <div className={`stat-card tone-${tone}`}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-      {hint && <small>{hint}</small>}
+    <div className="a-head">
+      <div>
+        <h1>{title}</h1>
+        {subtitle && <p className="a-sub">{subtitle}</p>}
+      </div>
+      {children && <div className="a-head-actions">{children}</div>}
+    </div>
+  );
+}
+
+/** Small KPI card (same look as the dashboard tiles). tone: green | blue | amber | orange | purple | rose */
+export function StatCard({ label, value, tone = 'green', icon = 'Chart', hint }) {
+  const I = Icon[icon] || Icon.Chart;
+  return (
+    <div className="tile">
+      <span className={`tile-icon t-${tone}`}><I width={24} height={24} /></span>
+      <div className="tile-text">
+        <strong>{value}</strong>
+        <span>{label}</span>
+        {hint && <small className={`tile-foot t-${tone}`}>{hint}</small>}
+      </div>
     </div>
   );
 }
@@ -14,8 +33,10 @@ export function StatCard({ label, value, tone = 'teal', hint }) {
 export function Tabs({ tabs, value, onChange }) {
   return (
     <div className="a-tabs" role="tablist">
-      {tabs.map(([v, label]) => (
-        <button key={v} role="tab" aria-selected={value === v} className={value === v ? 'on' : ''} onClick={() => onChange(v)}>{label}</button>
+      {tabs.map(([v, label, count]) => (
+        <button key={v} role="tab" aria-selected={value === v} className={value === v ? 'on' : ''} onClick={() => onChange(v)}>
+          {label}{count > 0 && <em>{count}</em>}
+        </button>
       ))}
     </div>
   );
@@ -43,7 +64,7 @@ export function Table({ columns, rows, empty = 'Nothing here yet.' }) {
         <thead><tr>{columns.map((c) => <th key={c.label} className={c.className}>{c.label}</th>)}</tr></thead>
         <tbody>
           {rows.length === 0 ? (
-            <tr><td colSpan={columns.length} className="a-empty">{empty}</td></tr>
+            <tr><td colSpan={columns.length} className="a-empty"><Icon.Inbox width={34} height={34} /><span>{empty}</span></td></tr>
           ) : rows.map((r, i) => (
             <tr key={r.id ?? i}>{columns.map((c) => <td key={c.label} className={c.className}>{c.render ? c.render(r) : r[c.key]}</td>)}</tr>
           ))}

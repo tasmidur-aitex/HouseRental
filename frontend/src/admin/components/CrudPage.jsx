@@ -4,13 +4,13 @@ import { useFetch } from '../../hooks/useFetch.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { ErrorBox, Loader } from '../../components/Ui.jsx';
-import { FormModal, RowActions, SearchBox, Table, Toolbar } from './AdminUi.jsx';
+import { FormModal, PageHead, RowActions, SearchBox, Table, Toolbar } from './AdminUi.jsx';
 
 /**
  * Generic list + create/edit/delete screen for simple resources.
  * props: endpoint, columns, fields, empty (blank form), toForm(item), toBody(form,isEdit), search, extra(item) => nodes
  */
-export default function CrudPage({ title, noun, endpoint, columns, fields, empty, toForm, toBody, search = true, query, extraActions, canCreate = true }) {
+export default function CrudPage({ title, subtitle, noun, endpoint, columns, fields, empty, toForm, toBody, search = true, query, extraActions, canCreate = true }) {
   const toast = useToast();
   const [page, setPage] = useState(1);
   const [q, setQ] = useState('');
@@ -60,10 +60,9 @@ export default function CrudPage({ title, noun, endpoint, columns, fields, empty
 
   return (
     <>
-      <div className="a-head">
-        <h1>{title}</h1>
+      <PageHead title={title} subtitle={subtitle}>
         {canCreate && <button className="btn btn-primary" onClick={() => setEditing('new')}>+ Add {noun.toLowerCase()}</button>}
-      </div>
+      </PageHead>
       {search && <Toolbar><SearchBox value={q} onChange={(v) => { setQ(v); setPage(1); }} /></Toolbar>}
       <ErrorBox error={error} onRetry={reload} />
       {loading && !data ? <Loader /> : <Table columns={cols} rows={data || []} />}

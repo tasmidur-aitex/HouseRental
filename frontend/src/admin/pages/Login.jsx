@@ -30,15 +30,27 @@ export default function AdminLogin() {
 
   return (
     <div className="a-login">
-      <form className="card a-login-card" onSubmit={submit}>
-        <span className="login-logo"><LogoMark size={56} /></span>
-        <h1>Admin sign in</h1>
-        <p className="muted">Smart Tolet control panel</p>
-        {err && !err.errors && <div className="alert alert-error">{err.message}</div>}
-        <Field label="Email" error={err?.field('email')}><input type="email" required autoFocus autoComplete="username" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
-        <Field label="Password" error={err?.field('password')}><input type="password" required autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></Field>
-        <button className="btn btn-primary btn-block" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
-      </form>
+      <div className="a-login-art">
+        <LogoMark size={64} />
+        <h2>Smart To-Let <b>Admin</b></h2>
+        <p>Review listings, confirm visits, track payments and manage your site from one place.</p>
+        <ul>
+          <li>Approve and publish new properties</li>
+          <li>Confirm visit bookings</li>
+          <li>See payments and reports at a glance</li>
+        </ul>
+      </div>
+      <div className="a-login-main">
+        <form className="a-login-card" onSubmit={submit}>
+          <h1>Admin sign in</h1>
+          <p className="muted">Enter your admin account details.</p>
+          {err && !err.errors && <div className="alert alert-error">{err.message}</div>}
+          <Field label="Email" error={err?.field('email')}><input type="email" required autoFocus autoComplete="username" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
+          <Field label="Password" error={err?.field('password')}><input type="password" required autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></Field>
+          <button className="btn btn-primary btn-block btn-lg" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+          <a className="back-site" href="/">← Back to website</a>
+        </form>
+      </div>
     </div>
   );
 }

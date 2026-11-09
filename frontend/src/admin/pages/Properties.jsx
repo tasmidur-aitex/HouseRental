@@ -6,7 +6,7 @@ import { useToast } from '../../context/ToastContext.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { ErrorBox, Field, Loader, Modal } from '../../components/Ui.jsx';
 import { money, PLACEHOLDER, STATUS, dateText } from '../../utils/format.js';
-import { RowActions, SearchBox, Table, Tabs, Toolbar } from '../components/AdminUi.jsx';
+import { PageHead, RowActions, SearchBox, Table, Tabs, Toolbar } from '../components/AdminUi.jsx';
 
 const TABS = [['', 'All'], ['0', 'Pending'], ['1', 'Published'], ['2', 'In progress'], ['3', 'Delivered'], ['4', 'Cancelled']];
 
@@ -178,7 +178,7 @@ export default function Properties() {
 
   return (
     <>
-      <div className="a-head"><h1>Properties</h1></div>
+      <PageHead title="Properties" subtitle="Review submissions, set prices and badges, and publish listings." />
       <Tabs tabs={TABS} value={status} onChange={setStatus} />
       <Toolbar><SearchBox key={params.get('q') || 'x'} value={q} onChange={(v) => { setQ(v); setPage(1); }} placeholder="Search title, address, code…" /></Toolbar>
       <ErrorBox error={error} onRetry={reload} />

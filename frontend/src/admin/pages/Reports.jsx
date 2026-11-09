@@ -5,7 +5,7 @@ import { useFetch } from '../../hooks/useFetch.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { ErrorBox, Loader } from '../../components/Ui.jsx';
-import { StatCard, Table, Toolbar } from '../components/AdminUi.jsx';
+import { PageHead, StatCard, Table, Toolbar } from '../components/AdminUi.jsx';
 import { money } from '../../utils/format.js';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -36,7 +36,7 @@ export default function Reports() {
 
   return (
     <>
-      <div className="a-head"><h1>Delivered report</h1><button className="btn btn-outline" onClick={exportCsv}>Export CSV</button></div>
+      <PageHead title="Delivered report" subtitle="Properties marked delivered, with their total value."><button className="btn btn-outline" onClick={exportCsv}>Export CSV</button></PageHead>
       <Toolbar>
         <label className="inline-field">Date <input type="date" value={f.date} onChange={set('date')} /></label>
         <label className="inline-field">Month
@@ -46,7 +46,7 @@ export default function Reports() {
       <ErrorBox error={error} onRetry={reload} />
       {loading && !data ? <Loader /> : (
         <>
-          <div className="stat-grid"><StatCard label="Delivered properties" value={meta?.total ?? 0} tone="green" /><StatCard label="Total value" value={money(meta?.sum_total_price)} tone="green" /></div>
+          <div className="stat-grid"><StatCard icon="Building" label="Delivered properties" value={meta?.total ?? 0} tone="green" /><StatCard icon="Wallet" label="Total value" value={money(meta?.sum_total_price)} tone="orange" /></div>
           <Table columns={columns} rows={data || []} empty="No delivered properties for this filter." />
         </>
       )}

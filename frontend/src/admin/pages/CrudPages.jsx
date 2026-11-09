@@ -14,7 +14,7 @@ function useOptions(endpoint, label) {
 function Cities() {
   return (
     <CrudPage
-      title="Cities" noun="City" endpoint="/admin/cities"
+      title="Cities" subtitle="Cities shown in the search filters and on listings." noun="City" endpoint="/admin/cities"
       columns={[{ label: 'Name', key: 'name' }, { label: 'Added', render: (r) => dateText(r.created_at) }]}
       fields={[{ name: 'name', label: 'City name', required: true }]}
       empty={{ name: '' }} toForm={(r) => ({ name: r.name })}
@@ -26,7 +26,7 @@ function Areas() {
   const cities = useOptions('/admin/cities', (c) => c.name);
   return (
     <CrudPage
-      title="Areas (subcities)" noun="Area" endpoint="/admin/subcities"
+      title="Areas" subtitle="Neighbourhoods inside each city." noun="Area" endpoint="/admin/subcities"
       columns={[{ label: 'Area', key: 'name' }, { label: 'City', render: (r) => r.city?.name }]}
       fields={[
         { name: 'city_id', label: 'City', type: 'select', options: cities, required: true },
@@ -50,7 +50,7 @@ export function Places() {
 export function Coupons() {
   return (
     <CrudPage
-      title="Coupons" noun="Coupon" endpoint="/admin/coupons"
+      title="Coupons" subtitle="Discount codes users can apply to the listing fee." noun="Coupon" endpoint="/admin/coupons"
       columns={[{ label: 'Code', render: (r) => <code>{r.code}</code> }, { label: 'Discount', render: (r) => `${r.discount}%` }, { label: 'Created', render: (r) => dateText(r.created_at) }]}
       fields={[
         { name: 'code', label: 'Coupon code', required: true },
@@ -64,7 +64,7 @@ export function Coupons() {
 function BlogCategories() {
   return (
     <CrudPage
-      title="Blog categories" noun="Category" endpoint="/admin/blog/categories"
+      title="Blog categories" subtitle="Group your posts in English and Bangla." noun="Category" endpoint="/admin/blog/categories"
       columns={[{ label: 'English', key: 'name_en' }, { label: 'বাংলা', key: 'name_bn' }]}
       fields={[{ name: 'name_en', label: 'Name (English)', required: true }, { name: 'name_bn', label: 'Name (Bangla)', required: true }]}
       empty={{ name_en: '', name_bn: '' }} toForm={(r) => ({ name_en: r.name_en, name_bn: r.name_bn })}
@@ -81,7 +81,7 @@ function BlogPosts() {
   };
   return (
     <CrudPage
-      title="Blog posts" noun="Post" endpoint="/admin/blog/posts" toBody={toBody}
+      title="Blog posts" subtitle="Articles shown on the public blog." noun="Post" endpoint="/admin/blog/posts" toBody={toBody}
       columns={[
         { label: 'Title', render: (r) => <><strong>{r.title_en}</strong><br /><small>{r.title_bn}</small></> },
         { label: 'Category', render: (r) => r.category?.name_en },
@@ -126,7 +126,7 @@ export function Admins() {
   };
   return (
     <CrudPage
-      title="Sub-admins" noun="Admin" endpoint="/admin/admins" toBody={toBody}
+      title="Sub-admins" subtitle="Give team members access to only the sections they need." noun="Admin" endpoint="/admin/admins" toBody={toBody}
       columns={[
         { label: 'Name', render: (r) => <><strong>{r.name}</strong><br /><small>{r.email}</small></> },
         { label: 'Access', render: (r) => PERMS.filter(([k]) => r.permissions[k]).map(([, l]) => l).join(', ') || 'None' },

@@ -4,7 +4,7 @@ import { downloadFile } from '../../api/client.js';
 import { useFetch } from '../../hooks/useFetch.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { ErrorBox, Loader } from '../../components/Ui.jsx';
-import { RowActions, Table } from '../components/AdminUi.jsx';
+import { PageHead, RowActions, Table } from '../components/AdminUi.jsx';
 
 const size = (b) => (b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
 
@@ -49,7 +49,7 @@ export default function Backups() {
 
   return (
     <>
-      <div className="a-head"><h1>Database backups</h1><button className="btn btn-primary" onClick={run} disabled={running}>{running ? 'Backing up…' : 'Back up now'}</button></div>
+      <PageHead title="Database backups" subtitle="Daily backups run automatically at 02:00. You can also back up now."><button className="btn btn-primary" onClick={run} disabled={running}>{running ? 'Backing up…' : 'Back up now'}</button></PageHead>
       <ErrorBox error={error} onRetry={reload} />
       {loading && !data ? <Loader /> : <Table columns={columns} rows={(data || []).map((b) => ({ ...b, id: b.name }))} empty="No backups yet." />}
     </>

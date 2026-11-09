@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { adm } from '../adminApi.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { ErrorBox, Field, Loader } from '../../components/Ui.jsx';
+import { PageHead } from '../components/AdminUi.jsx';
 
 const GROUPS = [
   ['Company', [['company_name', 'Company name'], ['phone_one', 'Phone 1'], ['phone_two', 'Phone 2'], ['email_one', 'Email 1'], ['email_two', 'Email 2'], ['address_one', 'Address 1'], ['address_two', 'Address 2']]],
@@ -41,7 +42,7 @@ export default function Settings() {
 
   return (
     <>
-      <div className="a-head"><h1>Site settings</h1></div>
+      <PageHead title="Site settings" subtitle="Company details, social links and the numbers shown on the home page." />
       <form onSubmit={submit} className="a-settings">
         {err && !err.errors && <div className="alert alert-error">{err.message}</div>}
         {GROUPS.map(([title, fields]) => (

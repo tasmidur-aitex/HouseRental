@@ -166,10 +166,6 @@ a.tile:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(16,24,4
 .a-settings .btn { justify-self: start; }
 .modal:has(.a-detail), .modal:has(.a-form) { max-width: 640px; }
 
-.a-login { min-height: 100vh; display: grid; place-items: center; background: linear-gradient(150deg, #0b1f2a, #0f766e); padding: 20px; }
-.a-login-card { width: 100%; max-width: 400px; padding: 30px; text-align: center; }
-.a-login-card .field { text-align: left; }
-.brand-mark.dark { background: linear-gradient(135deg, var(--primary), #14b8a6); margin: 0 auto 12px; }
 
 @media (max-width: 1180px) { .tiles { grid-template-columns: repeat(2, 1fr); } .g-top, .g-bottom { grid-template-columns: 1fr 1fr; } .g-top > :first-child { grid-column: 1 / -1; } }
 @media (max-width: 900px) {
@@ -188,3 +184,77 @@ a.tile:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(16,24,4
 .due-list small { white-space: normal; }
 .g-top > .panel:first-child { display: flex; flex-direction: column; }
 .g-top > .panel:first-child .chart { margin: auto 0; }
+
+
+/* ================= Shared page layout (all admin pages) ================= */
+/* admin accent: the same green as the sidebar, also used by buttons, inputs and modals inside the panel */
+.a-shell, .a-login { --primary: #15803d; --primary-dark: #166534; --primary-soft: #e8f6ee; }
+
+.a-head { margin-bottom: 20px; align-items: flex-start; }
+.a-head h1 { font-size: 1.75rem; letter-spacing: -.01em; }
+.a-sub { margin: 4px 0 0; color: var(--muted); }
+.a-head-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* tabs: pill row inside a white bar */
+.a-tabs { background: #fff; border: 1px solid #e8eeeb; box-shadow: 0 1px 2px rgba(16,24,40,.04); padding: 5px; border-radius: 14px; gap: 4px; }
+.a-tabs button { display: inline-flex; align-items: center; gap: 8px; border-radius: 10px; padding: 9px 18px; }
+.a-tabs button:hover:not(.on) { background: #f1f5f3; }
+.a-tabs button.on { background: var(--a-green); color: #fff; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+.a-tabs em { font-style: normal; font-size: .72rem; background: rgba(0,0,0,.1); padding: 1px 7px; border-radius: 999px; }
+.a-tabs button.on em { background: rgba(255,255,255,.28); }
+
+/* filter bar */
+.a-toolbar { background: #fff; border: 1px solid #e8eeeb; border-radius: 14px; padding: 12px 14px; box-shadow: 0 1px 2px rgba(16,24,40,.04); }
+.a-search { max-width: 380px; border-radius: 999px; background: #f3f6f4; border-color: transparent; padding-inline: 18px; }
+.a-search:focus { background: #fff; }
+
+/* data table card */
+.a-table-card, .card.table-wrap { border-radius: 16px; border: 1px solid #e8eeeb; box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.05); overflow-x: auto; }
+.a-table th { background: #f1f7f3; color: #4b5f55; font-size: .74rem; letter-spacing: .06em; padding: 14px 18px; position: sticky; top: 0; }
+.a-table td { padding: 15px 18px; border-top: 1px solid #eef2f0; }
+.a-table tbody tr { transition: background .12s; }
+.a-table tbody tr:hover { background: #f8fbf9; }
+.a-table td strong { color: var(--ink); }
+.a-empty { padding: 48px 18px !important; }
+.a-empty svg { display: block; margin: 0 auto 8px; color: #b6c4bc; }
+.a-empty span { display: block; }
+.row-actions .btn { border-radius: 9px; }
+.row-actions .btn-outline { background: #fff; }
+
+/* KPI strip (Reports) uses the dashboard tiles */
+.stat-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 18px; }
+.stat-grid .tile { padding: 16px 18px; }
+.stat-grid .tile-icon { width: 52px; height: 52px; }
+.stat-grid .tile-text strong { font-size: 1.6rem; }
+
+/* modals */
+.modal-backdrop { backdrop-filter: blur(2px); }
+.modal { border-radius: 18px; padding: 0; }
+.modal-head { padding: 18px 22px; border-bottom: 1px solid #e8eeeb; margin: 0; position: sticky; top: 0; background: #fff; z-index: 1; border-radius: 18px 18px 0 0; }
+.modal > :not(.modal-head) { margin-inline: 22px; }
+.modal > :last-child { margin-bottom: 22px; }
+.modal > .modal-head + * { margin-top: 18px; }
+.a-form-actions { border-top: 1px solid #eef2f0; padding-top: 14px; margin-top: 12px; }
+
+/* settings + generic form cards */
+.a-settings { max-width: 980px; }
+.a-settings .form-card { border-radius: 16px; }
+.a-settings .form-card h3 { color: var(--a-deep); padding-bottom: 10px; border-bottom: 1px solid #eef2f0; margin-bottom: 16px; }
+
+/* property detail modal */
+.a-dl { background: #f6faf7; border-radius: 12px; padding: 14px 16px; }
+.a-actions { padding-top: 14px; border-top: 1px solid #eef2f0; }
+
+/* ================= Admin sign-in ================= */
+.a-login { min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; background: #fff; }
+.a-login-art { background: radial-gradient(900px 400px at 90% -10%, rgba(74,222,128,.35), transparent 60%), linear-gradient(160deg, #0f6b46, #0a4f37); color: #d4eadd; display: flex; flex-direction: column; justify-content: center; gap: 14px; padding: 60px; }
+.a-login-art h2 { color: #fff; font-size: 2.1rem; margin: 10px 0 0; font-weight: 600; } .a-login-art h2 b { font-weight: 800; }
+.a-login-art p { max-width: 420px; font-size: 1.05rem; margin: 0; }
+.a-login-art ul { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 10px; }
+.a-login-art li::before { content: '✓'; display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 10px; border-radius: 50%; background: rgba(255,255,255,.18); font-size: .8rem; }
+.a-login-main { display: grid; place-items: center; padding: 30px 20px; background: #f6f8f7; }
+.a-login-card { width: 100%; max-width: 400px; background: #fff; border: 1px solid #e8eeeb; border-radius: 18px; padding: 34px; box-shadow: 0 10px 30px rgba(16,24,40,.08); }
+.a-login-card h1 { margin-bottom: 4px; }
+.a-login-card form, .a-login-card .field { text-align: left; }
+.back-site { display: block; text-align: center; margin-top: 16px; color: var(--muted); font-size: .9rem; }
+@media (max-width: 900px) { .a-login { grid-template-columns: 1fr; } .a-login-art { display: none; } }

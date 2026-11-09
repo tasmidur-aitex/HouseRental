@@ -4,7 +4,7 @@ import { useFetch } from '../../hooks/useFetch.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import { ErrorBox, Loader } from '../../components/Ui.jsx';
-import { RowActions, Table, Tabs } from '../components/AdminUi.jsx';
+import { PageHead, RowActions, Table, Tabs } from '../components/AdminUi.jsx';
 import { dateText, money } from '../../utils/format.js';
 
 const TONE = { Complete: 'green', Done: 'green', Processing: 'green', Pending: 'amber', Failed: 'red', Canceled: 'gray' };
@@ -39,7 +39,7 @@ export default function Orders() {
 
   return (
     <>
-      <div className="a-head"><h1>Payments</h1></div>
+      <PageHead title="Payments" subtitle="Listing-fee payments made through SSLCommerz." />
       <Tabs tabs={TABS} value={status} onChange={(v) => { setStatus(v); setPage(1); }} />
       <ErrorBox error={error} onRetry={reload} />
       {loading && !data ? <Loader /> : <Table columns={columns} rows={data || []} empty="No payments." />}
