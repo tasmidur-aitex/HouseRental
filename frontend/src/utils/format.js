@@ -18,3 +18,14 @@ export const STATUS = {
   3: { label: 'Rented', tone: 'gray' },
   4: { label: 'Cancelled', tone: 'red' },
 };
+
+/** "3 days ago" style label for a listing date. */
+export function timeAgo(iso) {
+  if (!iso) return '';
+  const days = Math.floor((Date.now() - new Date(iso)) / 86400000);
+  if (days <= 0) return 'Listed today';
+  if (days === 1) return 'Listed yesterday';
+  if (days < 30) return `Listed ${days} days ago`;
+  if (days < 365) return `Listed ${Math.floor(days / 30)} month${days >= 60 ? 's' : ''} ago`;
+  return `Listed ${Math.floor(days / 365)} year(s) ago`;
+}

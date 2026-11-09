@@ -7,16 +7,17 @@ import { useToast } from '../context/ToastContext.jsx';
 import { useLang } from '../context/LangContext.jsx';
 import { useCompare } from '../context/CompareContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
+import PropertyCard, { PropertyCardSkeleton } from '../components/PropertyCard.jsx';
 import VisitForm from '../components/VisitForm.jsx';
-import PropertyCard from '../components/PropertyCard.jsx';
-import { ErrorBox, Field, Loader } from '../components/Ui.jsx';
-import { Icon } from '../components/Icons.jsx';
+import Gallery from '../components/Gallery.jsx';
 import RecentlyViewed from '../components/RecentlyViewed.jsx';
+import { ErrorBox, Field } from '../components/Ui.jsx';
+import { Icon } from '../components/Icons.jsx';
 import { usePageMeta } from '../hooks/usePageMeta.js';
 import { addRecent } from '../utils/recent.js';
-import { money, PLACEHOLDER } from '../utils/format.js';
+import { dateText, money, timeAgo } from '../utils/format.js';
 
-function InquiryForm({ id }) {
+function InquiryForm({ id, embedded = false }) {
   const { t } = useLang();
   const { user } = useAuth();
   const toast = useToast();
@@ -41,8 +42,8 @@ function InquiryForm({ id }) {
   };
 
   return (
-    <form className="card side-card" onSubmit={submit}>
-      <h3>{t('interested')}</h3>
+    <form className={embedded ? 'embedded' : 'card side-card'} onSubmit={submit}>
+      {!embedded && <h3>{t('interested')}</h3>}
       <p className="muted">Leave your details and we will get back to you.</p>
       {err && !err.errors && <div className="alert alert-error">{err.message}</div>}
       <Field label="Name" error={err?.field('name')}><input required value={form.name} onChange={set('name')} /></Field>
@@ -54,6 +55,16 @@ function InquiryForm({ id }) {
   );
 }
 
+
+function DetailSkeleton() {
+  return (
+    <div className="container pdp pdp-skel" aria-hidden="true">
+      <div className="gal gal-5"><span className="gal-main" />{[0, 1, 2, 3].map((i) => <span key={i} className="gal-small" />)}</div>
+      <div className="pdp-grid"><div><span className="s1" /><span className="s2" /><span className="s3" /></div><div><span className="s4" /></div></div>
+    </div>
+  );
+}
+
 export default function PropertyDetails() {
   const { id } = useParams();
   const { t } = useLang();
@@ -61,122 +72,158 @@ export default function PropertyDetails() {
   const toast = useToast();
   const navigate = useNavigate();
   const { has, toggle } = useWishlist();
-  const [active, setActive] = useState(0);
+  const compare = useCompare();
   const [tab, setTab] = useState('visit');
+  const [more, setMore] = useState(false);
   const { data: p, loading, error } = useFetch(() => propertyApi.get(id), [id]);
   const nearby = useFetch(() => propertyApi.nearby(id), [id]);
-  const compare = useCompare();
   usePageMeta(p ? `${p.title} – ${p.city?.name || 'For rent'}` : undefined, p ? p.details?.slice(0, 155) : undefined);
-  useEffect(() => {
-    if (p) addRecent(p);
-  }, [p]);
+  useEffect(() => { if (p) addRecent(p); }, [p]);
+  useEffect(() => { setTab('visit'); setMore(false); window.scrollTo(0, 0); }, [id]);
 
-  if (loading) return <Loader />;
+  if (loading && !p) return <DetailSkeleton />;
   if (error) return <div className="container section"><ErrorBox error={error} /><Link to="/properties" className="btn btn-outline">Back to properties</Link></div>;
 
-  const images = p.images.length ? p.images : [PLACEHOLDER];
   const price = p.discount_price && p.discount_price < p.price ? p.discount_price : p.price;
+  const off = price !== p.price ? Math.round((1 - price / p.price) * 100) : 0;
   const liked = has(p.id);
+  const comparing = compare.has(p.id);
+  const place = [p.subcity?.name, p.city?.name].filter(Boolean).join(', ');
+  const osm = p.latitude && p.longitude
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${p.longitude - 0.01},${p.latitude - 0.006},${p.longitude + 0.01},${p.latitude + 0.006}&layer=mapnik&marker=${p.latitude},${p.longitude}`
+    : null;
+  const longText = (p.details || '').length > 380;
 
-  const onHeart = async () => {
+  const onSave = async () => {
     if (!user) return navigate('/login', { state: { from: `/properties/${p.id}` } });
     try {
       await toggle(p.id);
-      toast.success(liked ? 'Removed from wishlist' : 'Saved to wishlist');
+      toast.success(liked ? 'Removed from saved' : 'Saved to your wishlist');
     } catch (e) {
       toast.error(e.message);
     }
   };
+  const onShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: p.title, url });
+      else {
+        await navigator.clipboard.writeText(url);
+        toast.success(t('linkCopied'));
+      }
+    } catch { /* user cancelled */ }
+  };
+  const onCompare = () => { if (!compare.toggle(p.id)) toast.info('You can compare up to 3 properties'); };
+  const goBook = () => { setTab('visit'); document.getElementById('book')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 
   const facts = [
-    ['Bedrooms', p.bedroom], ['Bathrooms', p.bathroom], ['Kitchens', p.kitchen], ['Parking', p.parking ?? '—'],
-    ['Area', p.area], ['Floor', p.floor || '—'], ['Type', p.type], ['Category', p.category],
+    ['Bed', 'Bedrooms', p.bedroom], ['Bath', 'Bathrooms', p.bathroom], ['Utensils', 'Kitchens', p.kitchen],
+    ['Car', 'Parking', p.parking ?? 0], ['Area', 'Area', p.area], ['Layers', 'Floor', p.floor || '—'],
   ];
-  const osm = p.latitude && p.longitude
-    ? `https://www.openstreetmap.org/export/embed.html?bbox=${p.longitude - 0.01},${p.latitude - 0.006},${p.longitude + 0.01},${p.latitude + 0.006}&layer=mapnik&marker=${p.latitude},${p.longitude}`
-    : null;
+  const info = [
+    ['Property code', p.code], ['Purpose', `For ${p.purpose}`], ['Category', p.category], ['Type', p.type],
+    ['Service charge', p.service_charge ? money(p.service_charge) : 'None'], ['Listed', dateText(p.created_at)],
+  ];
 
   return (
-    <div className="container detail">
-      <nav className="crumbs"><Link to="/">{t('home')}</Link> / <Link to="/properties">{t('properties')}</Link> / <span>{p.title}</span></nav>
+    <div className="container pdp">
+      <nav className="crumbs"><Link to="/">{t('home')}</Link> / <Link to="/properties">{t('properties')}</Link>{p.city && <> / <Link to={`/city/${p.city.id}`}>{p.city.name}</Link></>} / <span>{p.title}</span></nav>
 
-      <div className="detail-grid">
-        <div>
-          <div className="gallery">
-            <img className="gallery-main" src={images[active]} alt={p.title} onError={(e) => (e.currentTarget.src = PLACEHOLDER)} />
-            {images.length > 1 && (
-              <div className="gallery-thumbs">
-                {images.map((src, i) => (
-                  <button key={src} className={i === active ? 'active' : ''} onClick={() => setActive(i)}>
-                    <img src={src} alt="" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+      <Gallery images={p.images} title={p.title} />
 
-          <div className="detail-head">
-            <div>
-              <div className="badges inline">
-                <span className="badge badge-blue">{p.purpose}</span>
-                {p.badges.hot_new && <span className="badge badge-red">New</span>}
-                {p.badges.trend && <span className="badge badge-amber">Trending</span>}
-                {p.badges.best_rated && <span className="badge badge-green">Top rated</span>}
-              </div>
-              <h1>{p.title}</h1>
-              <p className="card-loc"><Icon.Pin /> {p.address}{p.subcity ? `, ${p.subcity.name}` : ''}{p.city ? `, ${p.city.name}` : ''}</p>
-              <p className="muted">Property code: {p.code}</p>
+      <div className="pdp-grid">
+        <div className="pdp-main">
+          {/* ---- title block ---- */}
+          <header className="pdp-head">
+            <div className="pdp-tags">
+              <span className="pc-badge b-rent">For {p.purpose}</span>
+              {p.badges.hot_new && <span className="pc-badge b-new">New</span>}
+              {p.badges.trend && <span className="pc-badge b-trend">Trending</span>}
+              {p.badges.best_rated && <span className="pc-badge b-top"><Icon.Star width={12} height={12} /> Top rated</span>}
+              <span className="pdp-verified"><Icon.Verified width={16} height={16} /> Verified</span>
             </div>
-            <div className="detail-price">
-              <div className="price big">{money(price)}<small>{t('perMonth')}</small></div>
-              {price !== p.price && <s className="old-price">{money(p.price)}</s>}
-              {p.service_charge ? <p className="muted">Service charge {money(p.service_charge)}</p> : null}
-              <button className={`btn ${liked ? 'btn-primary' : 'btn-outline'}`} onClick={onHeart}>
-                <Icon.Heart filled={liked} /> {liked ? 'Saved' : 'Save'}
-              </button>
-              <button className={`btn btn-sm ${compare.has(p.id) ? 'btn-primary' : 'btn-outline'}`} onClick={() => { if (!compare.toggle(p.id)) toast.info('You can compare up to 3 properties'); }}>
-                {compare.has(p.id) ? '✓ In compare' : '+ Compare'}
-              </button>
+            <h1>{p.title}</h1>
+            <p className="pdp-loc"><Icon.Pin width={17} height={17} /> {p.address}{place ? `, ${place}` : ''}</p>
+            <div className="pdp-meta"><span>{timeAgo(p.created_at)}</span><span>Code {p.code}</span></div>
+            <div className="pdp-actions">
+              <button className={`pdp-act ${liked ? 'on' : ''}`} onClick={onSave}><Icon.Heart filled={liked} width={18} height={18} /> {liked ? t('saved') : t('save')}</button>
+              <button className="pdp-act" onClick={onShare}><Icon.Share width={18} height={18} /> {t('share')}</button>
+              <button className={`pdp-act ${comparing ? 'on' : ''}`} onClick={onCompare}><Icon.Layers width={18} height={18} /> {comparing ? 'In compare' : 'Compare'}</button>
             </div>
+          </header>
+
+          {/* ---- price (mobile / inline) ---- */}
+          <div className="pdp-price-inline">
+            <strong>{money(price)}</strong><small>{t('perMonth')}</small>
+            {off > 0 && <><s>{money(p.price)}</s><em>{off}% off</em></>}
           </div>
 
-          <div className="facts-grid">
-            {facts.map(([k, v]) => (<div key={k}><span>{k}</span><strong>{v}</strong></div>))}
+          {/* ---- key facts ---- */}
+          <div className="pdp-facts">
+            {facts.map(([ic, label, v]) => {
+              const I = Icon[ic];
+              return (<div key={label}><span><I width={22} height={22} /></span><strong>{v}</strong><small>{label}</small></div>);
+            })}
           </div>
 
-          <section className="block">
-            <h2>{t('details')}</h2>
-            <p className="prose">{p.details}</p>
+          <section className="pdp-sec">
+            <h2>{t('overview')}</h2>
+            <p className={`prose ${longText && !more ? 'clamped' : ''}`}>{p.details}</p>
+            {longText && <button className="link-btn pdp-more" onClick={() => setMore(!more)}>{more ? 'Show less' : 'Read more'}</button>}
+          </section>
+
+          <section className="pdp-sec">
+            <h2>{t('propInfo')}</h2>
+            <dl className="pdp-info">
+              {info.map(([k, v]) => (<div key={k}><dt>{k}</dt><dd>{v}</dd></div>))}
+            </dl>
           </section>
 
           {(osm || p.map_link || p.video) && (
-            <section className="block">
-              <h2>{t('location')}</h2>
+            <section className="pdp-sec">
+              <h2>{t('locationT')}</h2>
+              <p className="muted"><Icon.Pin width={15} height={15} /> {p.address}{place ? `, ${place}` : ''}</p>
               {osm && <iframe className="map" title="Map" src={osm} loading="lazy" />}
               <div className="link-row">
-                {p.map_link && <a className="btn btn-outline btn-sm" href={p.map_link} target="_blank" rel="noreferrer">Open in Google Maps</a>}
-                {p.video && <a className="btn btn-outline btn-sm" href={p.video} target="_blank" rel="noreferrer">Watch video tour</a>}
+                {p.map_link && <a className="btn btn-outline btn-sm" href={p.map_link} target="_blank" rel="noreferrer"><Icon.External width={15} height={15} /> Open in Google Maps</a>}
+                {p.video && <a className="btn btn-outline btn-sm" href={p.video} target="_blank" rel="noreferrer"><Icon.Camera width={15} height={15} /> Watch video tour</a>}
               </div>
             </section>
           )}
         </div>
 
-        <aside>
-          <div className="tabs-mini" role="tablist">
-            <button role="tab" aria-selected={tab === 'visit'} className={tab === 'visit' ? 'on' : ''} onClick={() => setTab('visit')}>Book a visit</button>
-            <button role="tab" aria-selected={tab === 'info'} className={tab === 'info' ? 'on' : ''} onClick={() => setTab('info')}>Ask a question</button>
+        {/* ---- sticky booking card ---- */}
+        <aside className="pdp-aside" id="book">
+          <div className="pdp-price-card">
+            <div className="pdp-price">
+              <strong>{money(price)}</strong><small>{t('perMonth')}</small>
+            </div>
+            {off > 0 && <p className="pdp-price-sub"><s>{money(p.price)}</s><em>{off}% off</em></p>}
+            {p.service_charge ? <p className="pdp-price-note">+ {money(p.service_charge)} service charge</p> : <p className="pdp-price-note">No hidden charges</p>}
+            <div className="pdp-tabs" role="tablist">
+              <button role="tab" aria-selected={tab === 'visit'} className={tab === 'visit' ? 'on' : ''} onClick={() => setTab('visit')}>{t('bookVisit')}</button>
+              <button role="tab" aria-selected={tab === 'info'} className={tab === 'info' ? 'on' : ''} onClick={() => setTab('info')}>{t('askQuestion')}</button>
+            </div>
+            {tab === 'visit' ? <VisitForm propertyId={p.id} embedded /> : <InquiryForm id={p.id} embedded />}
+            <p className="pdp-trust"><Icon.Shield width={16} height={16} /> {t('verifiedNote')}</p>
           </div>
-          {tab === 'visit' ? <VisitForm propertyId={p.id} /> : <InquiryForm id={p.id} />}
         </aside>
       </div>
 
-      {nearby.data?.length > 0 && (
-        <section className="section">
-          <h2>{t('nearby')}</h2>
-          <div className="grid grid-3">{nearby.data.map((n) => <PropertyCard key={n.id} p={n} />)}</div>
-        </section>
-      )}
+      <section className="pdp-sec pdp-similar">
+        <h2>{t('similar')}</h2>
+        <div className="grid grid-3">
+          {nearby.loading && !nearby.data ? [0, 1, 2].map((i) => <PropertyCardSkeleton key={i} />) : (nearby.data || []).slice(0, 3).map((n) => <PropertyCard key={n.id} p={n} />)}
+        </div>
+        {nearby.data?.length === 0 && <p className="muted">No other published properties nearby yet.</p>}
+      </section>
       <RecentlyViewed excludeId={p.id} className="section flush" />
+
+      {/* ---- mobile booking bar ---- */}
+      <div className="pdp-bar">
+        <div><strong>{money(price)}</strong><small>{t('perMonth')}</small></div>
+        <button className="btn btn-primary" onClick={goBook}><Icon.Calendar width={17} height={17} /> {t('bookVisit')}</button>
+      </div>
     </div>
   );
 }

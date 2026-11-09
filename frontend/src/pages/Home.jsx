@@ -4,25 +4,57 @@ import { contentApi, placesApi, propertyApi } from '../api/index.js';
 import { useFetch } from '../hooks/useFetch.js';
 import { useLang } from '../context/LangContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import PropertyCard from '../components/PropertyCard.jsx';
-import { Loader, SectionHead } from '../components/Ui.jsx';
+import PropertyCard, { PropertyCardSkeleton } from '../components/PropertyCard.jsx';
 import { Icon } from '../components/Icons.jsx';
 import HeroArt from '../components/HeroArt.jsx';
 import RecentlyViewed from '../components/RecentlyViewed.jsx';
 import { CATEGORIES } from './Discover.jsx';
 import { usePageMeta } from '../hooks/usePageMeta.js';
+import { initials } from '../utils/format.js';
 
-function PropertyRow({ title, query }) {
+const CAT_ICON = { family: 'Home', bachelor: 'Key', office: 'Building', shop: 'Tag' };
+
+function SectionTitle({ title, sub, right }) {
+  return (
+    <div className="hm-title">
+      <div><h2>{title}</h2>{sub && <p>{sub}</p>}</div>
+      {right}
+    </div>
+  );
+}
+
+/** One section, four tabs: replaces four near-identical rows. */
+function Explore() {
   const { t } = useLang();
-  const { data, loading } = useFetch(() => propertyApi.list({ per_page: 4, ...query }), [JSON.stringify(query)]);
-  if (!loading && (!data || data.length === 0)) return null;
-  const qs = new URLSearchParams(query).toString();
+  const tabs = [
+    ['hot_new', t('hotNew'), { badge: 'hot_new' }],
+    ['trend', t('trending'), { badge: 'trend' }],
+    ['best', t('bestRated'), { badge: 'best_rated' }],
+    ['latest', t('latest'), { sort: 'latest' }],
+  ];
+  const [tab, setTab] = useState('hot_new');
+  const query = tabs.find((x) => x[0] === tab)[2];
+  const { data, loading } = useFetch(() => propertyApi.list({ per_page: 8, ...query }), [tab]);
+  // an empty badge tab (nothing flagged yet) falls back to the latest listings so the section never looks broken
+  const empty = !loading && data && data.length === 0;
+  const fallback = useFetch(() => (empty ? propertyApi.list({ per_page: 8, sort: 'latest' }) : Promise.resolve({ data: null })), [empty, tab]);
+  const items = empty ? fallback.data : data;
+  const qs = new URLSearchParams(empty ? { sort: 'latest' } : query).toString();
 
   return (
-    <section className="section">
+    <section className="section hm-explore">
       <div className="container">
-        <SectionHead title={title} to={`/properties?${qs}`} linkLabel={t('viewAll')} />
-        {loading ? <Loader /> : <div className="grid grid-4">{data.map((p) => <PropertyCard key={p.id} p={p} />)}</div>}
+        <SectionTitle title={t('exploreTitle')} sub={t('exploreSub')}
+          right={<Link to={`/properties?${qs}`} className="hm-all">{t('viewAll')} <Icon.Arrow width={16} height={16} /></Link>} />
+        <div className="hm-tabs" role="tablist">
+          {tabs.map(([k, label]) => (
+            <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>
+          ))}
+        </div>
+        <div className="grid grid-4">
+          {!items ? Array.from({ length: 8 }, (_, i) => <PropertyCardSkeleton key={i} />) : items.map((p) => <PropertyCard key={p.id} p={p} />)}
+        </div>
+        {items?.length === 0 && <p className="muted center-text">No properties yet. Check back soon.</p>}
       </div>
     </section>
   );
@@ -52,7 +84,6 @@ export default function Home() {
     if (maxPrice) p.set('max_price', maxPrice);
     navigate(`/properties?${p.toString()}`);
   };
-
   const onSubscribe = async (e) => {
     e.preventDefault();
     try {
@@ -67,9 +98,12 @@ export default function Home() {
   const stats = settings.data
     ? [['experience', 'Years of experience'], ['project', 'Properties listed'], ['clients', 'Happy clients'], ['award', 'Awards']].filter(([k]) => settings.data[k])
     : [];
+  const trust = [['Shield', 'trust1T', 'trust1D'], ['Calendar', 'trust2T', 'trust2D'], ['Wallet', 'trust3T', 'trust3D'], ['Search', 'trust4T', 'trust4D']];
+  const steps = [['Search', 'step1T', 'step1D'], ['Calendar', 'step2T', 'step2D'], ['Key', 'step3T', 'step3D']];
 
   return (
     <>
+      {/* ---------- hero ---------- */}
       <section className="hero">
         <div className="hero-bg" aria-hidden="true">
           <HeroArt />
@@ -80,7 +114,9 @@ export default function Home() {
             <span className="hero-pill">{t('heroKicker')}</span>
             <h1>{t('heroTitle')}<span>{t('heroTitle2')}</span></h1>
             <p>{t('heroSub')}</p>
-            <Link to="/properties" className="btn hero-cta">{t('search')} →</Link>
+            <div className="hm-quick">
+              {Object.entries(CATEGORIES).map(([slug, c]) => (<Link key={slug} to={`/rent/${slug}`}>{c.name}</Link>))}
+            </div>
           </div>
 
           <form className="hero-card" onSubmit={onSearch}>
@@ -114,67 +150,119 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="ticker" aria-hidden="true">
-        <div className="ticker-track">
-          {[0, 1].map((i) => (
-            <span key={i}>Verified listings ✦ Zero brokerage worries ✦ Book a visit online ✦ Flats · Offices · Shops · Bachelor seats ✦ Smart Tolet — your next home, sorted ✦&nbsp;</span>
-          ))}
+      {/* ---------- trust strip ---------- */}
+      <div className="container">
+        <div className="hm-trust">
+          {trust.map(([ic, tt, dd]) => {
+            const I = Icon[ic];
+            return (
+              <div key={tt}><span><I width={22} height={22} /></span><div><strong>{t(tt)}</strong><small>{t(dd)}</small></div></div>
+            );
+          })}
         </div>
       </div>
 
-      {stats.length > 0 && (
+      {/* ---------- categories ---------- */}
+      <section className="section hm-cats">
         <div className="container">
-          <div className="stats">
-            {stats.map(([k, label]) => (
-              <div key={k}><strong>{settings.data[k]}</strong><span>{label}</span></div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <section className="section tight">
-        <div className="container">
-          <div className="cat-tiles">
-            {Object.entries(CATEGORIES).map(([slug, c]) => (
-              <Link key={slug} to={`/rent/${slug}`} className="cat-tile">
-                <strong>{c.name}</strong>
-                <span>{c.title}</span>
-              </Link>
-            ))}
+          <SectionTitle title={t('catTitle')} sub={t('catSub')} />
+          <div className="hm-cat-grid">
+            {Object.entries(CATEGORIES).map(([slug, c]) => {
+              const I = Icon[CAT_ICON[slug]] || Icon.Home;
+              return (
+                <Link key={slug} to={`/rent/${slug}`} className={`hm-cat c-${slug}`}>
+                  <span className="hm-cat-ico"><I width={28} height={28} /></span>
+                  <strong>{c.name}</strong>
+                  <small>{c.blurb}</small>
+                  <em>{t('viewAll')} <Icon.Arrow width={15} height={15} /></em>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      <PropertyRow title={t('hotNew')} query={{ badge: 'hot_new' }} />
-      <PropertyRow title={t('trending')} query={{ badge: 'trend' }} />
-      <PropertyRow title={t('bestRated')} query={{ badge: 'best_rated' }} />
-      <PropertyRow title={t('latest')} query={{ sort: 'latest' }} />
+      <Explore />
 
+      {/* ---------- how it works ---------- */}
+      <section className="section hm-how">
+        <div className="container">
+          <SectionTitle title={t('howTitle')} sub={t('howSub')} />
+          <div className="hm-steps">
+            {steps.map(([ic, tt, dd], i) => {
+              const I = Icon[ic];
+              return (
+                <div key={tt} className="hm-step">
+                  <span className="hm-step-n">{i + 1}</span>
+                  <span className="hm-step-ico"><I width={30} height={30} /></span>
+                  <h3>{t(tt)}</h3>
+                  <p>{t(dd)}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- cities ---------- */}
       {cities.data?.length > 0 && (
-        <section className="section section-alt">
+        <section className="section hm-cities">
           <div className="container">
-            <SectionHead title={t('browseByCity')} />
-            <div className="city-chips">
-              {cities.data.map((c) => (
-                <Link key={c.id} to={`/city/${c.id}`} className="city-chip"><Icon.Pin /> {c.name}</Link>
+            <SectionTitle title={t('citiesTitle')} sub={t('citiesSub')} />
+            <div className="hm-city-grid">
+              {cities.data.slice(0, 6).map((c, i) => (
+                <Link key={c.id} to={`/city/${c.id}`} className={`hm-city g${i % 4}`}>
+                  <Icon.Pin width={22} height={22} />
+                  <strong>{c.name}</strong>
+                  <small>{c.subcities?.length ? c.subcities.slice(0, 4).map((s) => s.name).join(' · ') : 'Browse homes'}</small>
+                  <span>{c.subcities?.length ? `${c.subcities.length} ${c.subcities.length === 1 ? 'area' : 'areas'}` : 'Explore'} <Icon.Arrow width={14} height={14} /></span>
+                </Link>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {reviews.data?.length > 0 && (
-        <section className="section">
-          <div className="container">
-            <SectionHead title={t('reviews')} />
-            <div className="grid grid-3">
-              {reviews.data.map((r) => (
-                <blockquote key={r.id} className="review">
-                  <p>“{r.message}”</p>
-                  <footer>— {r.name}</footer>
-                </blockquote>
-              ))}
+      {/* ---------- owner banner ---------- */}
+      <section className="section tight">
+        <div className="container">
+          <div className="hm-owner">
+            <div>
+              <h2>{t('ownerT')}</h2>
+              <p>{t('ownerD')}</p>
+              <ul>
+                {['ownerP1', 'ownerP2', 'ownerP3'].map((k) => (<li key={k}><Icon.Check width={16} height={16} /> {t(k)}</li>))}
+              </ul>
+              <Link to="/list-your-property" className="btn btn-light btn-lg">{t('ownerCta')} <Icon.Arrow width={18} height={18} /></Link>
             </div>
+            <div className="hm-owner-art" aria-hidden="true"><Icon.Building width={120} height={120} /></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- numbers + reviews ---------- */}
+      {(stats.length > 0 || reviews.data?.length > 0) && (
+        <section className="section hm-proof">
+          <div className="container">
+            {stats.length > 0 && (
+              <div className="hm-stats">
+                {stats.map(([k, label]) => (<div key={k}><strong>{settings.data[k]}</strong><span>{label}</span></div>))}
+              </div>
+            )}
+            {reviews.data?.length > 0 && (
+              <>
+                <SectionTitle title={t('reviews')} />
+                <div className="grid grid-3">
+                  {reviews.data.slice(0, 3).map((r) => (
+                    <blockquote key={r.id} className="hm-review">
+                      <div className="stars" aria-label="5 out of 5">{[0, 1, 2, 3, 4].map((i) => <Icon.Star key={i} width={16} height={16} />)}</div>
+                      <p>“{r.message}”</p>
+                      <footer><span>{initials(r.name)}</span>{r.name}</footer>
+                    </blockquote>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </section>
       )}

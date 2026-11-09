@@ -17,7 +17,7 @@ const prettyTime = (t) => {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
 };
 
-export default function VisitForm({ propertyId }) {
+export default function VisitForm({ propertyId, embedded = false }) {
   const { user } = useAuth();
   const toast = useToast();
   const [form, setForm] = useState({ name: user?.name || '', email: user?.email || '', phone: user?.phone || '', message: '', visit_date: addDays(1), visit_time: '' });
@@ -34,7 +34,7 @@ export default function VisitForm({ propertyId }) {
     setForm((f) => ({ ...f, visit_time: '' }));
     propertyApi
       .visitSlots(propertyId, form.visit_date)
-      .then((r) => !cancelled && setSlots(r.data.slots))
+      .then((r) => !cancelled && setSlots(r.data?.slots || []))
       .catch(() => !cancelled && setSlots([]));
     return () => {
       cancelled = true;
@@ -54,7 +54,7 @@ export default function VisitForm({ propertyId }) {
       setErr(error);
       if (error.code === 'SLOT_TAKEN') {
         toast.error(error.message);
-        propertyApi.visitSlots(propertyId, form.visit_date).then((r) => setSlots(r.data.slots));
+        propertyApi.visitSlots(propertyId, form.visit_date).then((r) => setSlots(r.data?.slots || []));
         setForm((f) => ({ ...f, visit_time: '' }));
       }
     } finally {
@@ -64,7 +64,7 @@ export default function VisitForm({ propertyId }) {
 
   if (done) {
     return (
-      <div className="card side-card visit-done">
+      <div className={`${embedded ? 'embedded' : 'card side-card'} visit-done`}>
         <div className="result-icon ok-icon"><Icon.Check width={30} height={30} /></div>
         <h3>Visit requested</h3>
         <p><strong>{new Date(done.visit_date + 'T00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</strong> at <strong>{prettyTime(done.visit_time)}</strong></p>
@@ -75,8 +75,8 @@ export default function VisitForm({ propertyId }) {
   }
 
   return (
-    <form className="card side-card" onSubmit={submit}>
-      <h3>Book a visit</h3>
+    <form className={embedded ? 'embedded' : 'card side-card'} onSubmit={submit}>
+      {!embedded && <h3>Book a visit</h3>}
       <p className="muted">Pick a day and a time that suits you.</p>
       {err && !err.errors && <div className="alert alert-error">{err.message}</div>}
 
