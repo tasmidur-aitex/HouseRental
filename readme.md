@@ -121,5 +121,13 @@
 
 > Run **_npm install_**
 
-> Go to any browser and enter this URL  **_localhost/HouseRental_**
+> Go to any browser and enter this URL  **_localhost/HouseRental_** (legacy Blade site)
+
+## REST API + React app
+
+> API base: **_/api/v1_** (auth, properties, visits, payments, admin ...). Conventions: `.claude/skills/api-conventions/SKILL.md`
+
+> React app (public site + admin panel at `/admin`): see **_frontend/README.md_**
+
+> Production deployment, security checklist and nginx configs: see **_DEPLOYMENT.md_**
 

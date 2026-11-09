@@ -24,8 +24,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
+        // Needs a cron entry:  * * * * * php /path/to/artisan schedule:run
+        $schedule->command('tokens:prune')->daily();
+        $schedule->command('backup:run --only-db')->dailyAt('02:00')->withoutOverlapping();
+        $schedule->command('backup:clean')->dailyAt('02:30')->withoutOverlapping();
     }
 
     /**

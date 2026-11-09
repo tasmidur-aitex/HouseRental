@@ -14,6 +14,7 @@ use App\Model\Contact;
 use App\Model\Newsletter;
 use App\Model\SiteSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 /** Small public endpoints: blog, site settings, newsletter, contact, coupon check. */
 class ContentController extends ApiController
@@ -48,9 +49,14 @@ class ContentController extends ApiController
 
     public function settings()
     {
-        $row = SiteSetting::first();
+        // Every page footer asks for this, so keep it for 10 minutes (cleared when an admin saves).
+        $data = Cache::remember(SiteSetting::CACHE_KEY, 600, function () {
+            $row = SiteSetting::first();
 
-        return $this->success($row ? collect($row->toArray())->except(['id', 'created_at', 'updated_at'])->all() : (object) []);
+            return $row ? collect($row->toArray())->except(['id', 'created_at', 'updated_at'])->all() : [];
+        });
+
+        return $this->success($data ?: (object) []);
     }
 
     public function subscribe(Request $request)

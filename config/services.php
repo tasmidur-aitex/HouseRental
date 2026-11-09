@@ -31,9 +31,9 @@ return [
     ],
 
     'google' => [
-        'client_id' => '326396424247-g3k0mugsr9ts1ef48fo1f36dgfrelnpn.apps.googleusercontent.com',
-        'client_secret' => 'fRa0DImYy8pvP1CnXPfZwDFP',
-        'redirect' => 'http://localhost/HouseRental/callback/google',
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT', 'http://localhost/HouseRental/callback/google'),
     ],
 
     'facebook' => [

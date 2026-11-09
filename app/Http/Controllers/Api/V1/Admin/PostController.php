@@ -24,7 +24,7 @@ class PostController extends AdminCrudController
             'title_bn'    => "$req|string|max:255",
             'details_en'  => "$req|string",
             'details_bn'  => "$req|string",
-            'image'       => 'nullable|image|max:4096',
+            'image'       => 'nullable|mimes:jpeg,jpg,png,webp,gif|max:4096',
         ];
     }
 

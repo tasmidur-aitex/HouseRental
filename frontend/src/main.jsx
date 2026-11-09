@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { LangProvider } from './context/LangContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
@@ -17,7 +18,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <AuthProvider>
             <WishlistProvider>
               <CompareProvider>
-                <App />
+                <ErrorBoundary>
+                  <App />
+                </ErrorBoundary>
               </CompareProvider>
             </WishlistProvider>
           </AuthProvider>
