@@ -22,7 +22,7 @@ return [
     // Fee charged for a listing when the property has no service_charge of its own
     'default_amount' => env('PAYMENT_DEFAULT_AMOUNT', 500),
     // React app base URL the browser is sent back to after paying
-    'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
+    'frontend_url' => \App\Support\PublicUrl::frontend() ?: 'http://localhost:5173',
     'success_url' => '/success',
     'failed_url' => '/fail',
     'cancel_url' => '/cancel',

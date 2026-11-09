@@ -13,7 +13,7 @@ class UserResetPasswordNotification extends ResetPassword
 {
     public function toMail($notifiable)
     {
-        $frontend = env('FRONTEND_URL');
+        $frontend = \App\Support\PublicUrl::frontend();
         if (!$frontend) {
             return parent::toMail($notifiable);
         }

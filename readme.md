@@ -129,5 +129,7 @@
 
 > React app (public site + admin panel at `/admin`): see **_frontend/README.md_**
 
+> One-command Docker + public ngrok URL: see **_DOCKER.md_**
+
 > Production deployment, security checklist and nginx configs: see **_DEPLOYMENT.md_**
 
