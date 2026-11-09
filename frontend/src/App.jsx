@@ -14,6 +14,9 @@ import MyOrders from './pages/MyOrders.jsx';
 import Profile from './pages/Profile.jsx';
 import { ForgotPassword, ResetPassword } from './pages/Password.jsx';
 import { About, Faq, Privacy, Terms } from './pages/Info.jsx';
+import { CategoryPage, CityPage } from './pages/Discover.jsx';
+import Compare from './pages/Compare.jsx';
+import ListYourProperty from './pages/ListYourProperty.jsx';
 import { Blog, BlogPost, Contact, NotFound, PaymentResult } from './pages/Misc.jsx';
 
 function ScrollTop() {
@@ -42,6 +45,10 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/rent/:category" element={<CategoryPage />} />
+          <Route path="/city/:id" element={<CityPage />} />
+          <Route path="/compare" element={<Compare />} />
+          <Route path="/list-your-property" element={<ListYourProperty />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/privacy" element={<Privacy />} />

@@ -7,6 +7,9 @@ import { useToast } from '../context/ToastContext.jsx';
 import PropertyCard from '../components/PropertyCard.jsx';
 import { Loader, SectionHead } from '../components/Ui.jsx';
 import { Icon } from '../components/Icons.jsx';
+import RecentlyViewed from '../components/RecentlyViewed.jsx';
+import { CATEGORIES } from './Discover.jsx';
+import { usePageMeta } from '../hooks/usePageMeta.js';
 
 function PropertyRow({ title, query }) {
   const { t } = useLang();
@@ -26,6 +29,7 @@ function PropertyRow({ title, query }) {
 
 export default function Home() {
   const { t } = useLang();
+  usePageMeta('House rental made simple', 'Find verified homes, flats, offices and shops for rent. Search, save, compare and book a visit.');
   const navigate = useNavigate();
   const toast = useToast();
   const [q, setQ] = useState('');
@@ -95,6 +99,19 @@ export default function Home() {
         </div>
       )}
 
+      <section className="section tight">
+        <div className="container">
+          <div className="cat-tiles">
+            {Object.entries(CATEGORIES).map(([slug, c]) => (
+              <Link key={slug} to={`/rent/${slug}`} className="cat-tile">
+                <strong>{c.name}</strong>
+                <span>{c.title}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <PropertyRow title={t('hotNew')} query={{ badge: 'hot_new' }} />
       <PropertyRow title={t('trending')} query={{ badge: 'trend' }} />
       <PropertyRow title={t('bestRated')} query={{ badge: 'best_rated' }} />
@@ -106,7 +123,7 @@ export default function Home() {
             <SectionHead title={t('browseByCity')} />
             <div className="city-chips">
               {cities.data.map((c) => (
-                <Link key={c.id} to={`/properties?city_id=${c.id}`} className="city-chip"><Icon.Pin /> {c.name}</Link>
+                <Link key={c.id} to={`/city/${c.id}`} className="city-chip"><Icon.Pin /> {c.name}</Link>
               ))}
             </div>
           </div>
@@ -128,6 +145,8 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      <RecentlyViewed />
 
       <section className="cta">
         <div className="container cta-inner">

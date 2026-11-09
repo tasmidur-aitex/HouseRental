@@ -5,6 +5,7 @@ import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { LangProvider } from './context/LangContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
+import { CompareProvider } from './context/CompareContext.jsx';
 import { WishlistProvider } from './context/WishlistContext.jsx';
 import './styles.css';
 
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <ToastProvider>
           <AuthProvider>
             <WishlistProvider>
-              <App />
+              <CompareProvider>
+                <App />
+              </CompareProvider>
             </WishlistProvider>
           </AuthProvider>
         </ToastProvider>

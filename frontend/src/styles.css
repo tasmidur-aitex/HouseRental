@@ -72,7 +72,7 @@ main { min-height: 70vh; }
 .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), #14b8a6); color: #fff; }
 .brand-mark.big { width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,.18); margin-bottom: 18px; }
 .nav-links { display: flex; gap: 6px; flex: 1; }
-.nav-links a { padding: 8px 14px; border-radius: 8px; color: var(--text); font-weight: 500; }
+.nav-links a { white-space: nowrap; padding: 8px 14px; border-radius: 8px; color: var(--text); font-weight: 500; }
 .nav-links a:hover { background: #f1f5f9; }
 .nav-links a.active { color: var(--primary); background: var(--primary-soft); }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
@@ -353,3 +353,39 @@ textarea { resize: vertical; }
 .alert-ok { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
 .footer-bottom a { display: inline; color: #94a3b8; text-decoration: underline; }
 @media (max-width: 640px) { .stats.flat { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- Discovery ---------- */
+.compare-btn { position: absolute; top: 10px; right: 54px; height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: #fff; color: #334155; font: inherit; font-size: .78rem; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.15); opacity: 0; transition: opacity .15s; }
+.property-card:hover .compare-btn, .compare-btn.on, .compare-btn:focus { opacity: 1; }
+.compare-btn.on { background: var(--primary); color: #fff; }
+@media (hover: none) { .compare-btn { opacity: 1; } }
+.badges { max-width: calc(100% - 140px); }
+.nav-links .count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; margin-left: 4px; border-radius: 999px; background: var(--primary); color: #fff; font-size: .72rem; }
+.recent-row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x proximity; }
+.recent-card { display: flex; gap: 12px; align-items: center; min-width: 270px; padding: 10px; color: inherit; scroll-snap-align: start; }
+.recent-card img { width: 72px; height: 56px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+.recent-card div { display: flex; flex-direction: column; min-width: 0; }
+.recent-card strong { color: var(--primary-dark); }
+.recent-card span { color: var(--muted); font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.section.tight { padding: 28px 0 0; }
+.section.flush { padding: 30px 0 0; }
+.cat-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.cat-tile { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; border-radius: var(--radius); background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow); transition: all .2s; border-left: 4px solid var(--primary); }
+.cat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.cat-tile strong { font-size: 1.1rem; color: var(--ink); }
+.cat-tile span { color: var(--muted); font-size: .85rem; }
+.tabs { margin-bottom: 24px; }
+.city-chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.compare th { vertical-align: top; min-width: 220px; text-transform: none; letter-spacing: 0; font-size: 1rem; color: var(--ink); }
+.compare th img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-radius: 10px; margin-bottom: 8px; }
+.compare th span { display: block; font-weight: 600; margin-bottom: 6px; }
+.compare .row-label { color: var(--muted); font-weight: 600; background: #f8fafc; white-space: nowrap; }
+.hero-sm { padding: 60px 0 64px; }
+.btn-ghost.on-dark { color: #fff; }
+.btn-ghost.on-dark:hover { background: rgba(255,255,255,.14); }
+.steps-list { list-style: none; padding: 0; display: grid; gap: 14px; }
+.steps-list li { display: flex; gap: 14px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+.steps-list .step-n { margin: 0; flex-shrink: 0; }
+.cta-box { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 36px; padding: 26px; border-radius: var(--radius); background: var(--primary-soft); border: 1px solid #b9e4df; }
+.cta-box h3, .cta-box p { margin: 0; }
+@media (max-width: 860px) { .cat-tiles { grid-template-columns: repeat(2, 1fr); } }

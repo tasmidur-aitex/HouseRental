@@ -3,6 +3,7 @@ import { Icon } from './Icons.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useLang } from '../context/LangContext.jsx';
+import { useCompare } from '../context/CompareContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { money, PLACEHOLDER } from '../utils/format.js';
 
@@ -11,7 +12,9 @@ export default function PropertyCard({ p }) {
   const { user } = useAuth();
   const toast = useToast();
   const { has, toggle } = useWishlist();
+  const compare = useCompare();
   const liked = has(p.id);
+  const comparing = compare.has(p.id);
   const price = p.discount_price && p.discount_price < p.price ? p.discount_price : p.price;
   const hasDiscount = price !== p.price;
 
@@ -25,6 +28,11 @@ export default function PropertyCard({ p }) {
     }
   };
 
+  const onCompare = (e) => {
+    e.preventDefault();
+    if (!compare.toggle(p.id)) toast.info('You can compare up to 3 properties');
+  };
+
   return (
     <Link to={`/properties/${p.id}`} className="card property-card">
       <div className="card-img">
@@ -35,6 +43,7 @@ export default function PropertyCard({ p }) {
           {p.badges.best_rated && <span className="badge badge-green">Top rated</span>}
         </div>
         <span className="chip-purpose">{p.purpose}</span>
+        <button className={`compare-btn ${comparing ? 'on' : ''}`} onClick={onCompare} aria-label="Compare property">{comparing ? '✓ Compare' : '+ Compare'}</button>
         <button className={`heart ${liked ? 'liked' : ''}`} onClick={onHeart} aria-label="Save property">
           <Icon.Heart filled={liked} />
         </button>

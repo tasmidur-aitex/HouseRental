@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useLang } from '../context/LangContext.jsx';
+import { useCompare } from '../context/CompareContext.jsx';
 import { Icon } from './Icons.jsx';
 import { initials } from '../utils/format.js';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { t, lang, setLang } = useLang();
+  const compare = useCompare();
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
   const navigate = useNavigate();
@@ -34,6 +36,7 @@ export default function Navbar() {
           <NavLink to="/" end onClick={close}>{t('home')}</NavLink>
           <NavLink to="/properties" onClick={close}>{t('properties')}</NavLink>
           <NavLink to="/blog" onClick={close}>{t('blog')}</NavLink>
+          {compare.ids.length > 0 && <NavLink to="/compare" onClick={close}>Compare <span className="count">{compare.ids.length}</span></NavLink>}
           <NavLink to="/contact" onClick={close}>{t('contact')}</NavLink>
         </nav>
 
@@ -43,7 +46,7 @@ export default function Navbar() {
             <button className={lang === 'bn' ? 'active' : ''} onClick={() => setLang('bn')}>বাং</button>
           </div>
 
-          <Link to="/my/properties/new" className="btn btn-primary btn-sm hide-sm">{t('postProperty')}</Link>
+          <Link to={user ? "/my/properties/new" : "/list-your-property"} className="btn btn-primary btn-sm hide-sm">{t("postProperty")}</Link>
 
           {user ? (
             <div className="user-menu">

@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { propertyApi } from '../api/index.js';
 import { useFetch } from '../hooks/useFetch.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useLang } from '../context/LangContext.jsx';
+import { useCompare } from '../context/CompareContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import PropertyCard from '../components/PropertyCard.jsx';
 import { ErrorBox, Field, Loader } from '../components/Ui.jsx';
 import { Icon } from '../components/Icons.jsx';
+import RecentlyViewed from '../components/RecentlyViewed.jsx';
+import { usePageMeta } from '../hooks/usePageMeta.js';
+import { addRecent } from '../utils/recent.js';
 import { money, PLACEHOLDER } from '../utils/format.js';
 
 function InquiryForm({ id }) {
@@ -59,6 +63,11 @@ export default function PropertyDetails() {
   const [active, setActive] = useState(0);
   const { data: p, loading, error } = useFetch(() => propertyApi.get(id), [id]);
   const nearby = useFetch(() => propertyApi.nearby(id), [id]);
+  const compare = useCompare();
+  usePageMeta(p ? `${p.title} – ${p.city?.name || 'For rent'}` : undefined, p ? p.details?.slice(0, 155) : undefined);
+  useEffect(() => {
+    if (p) addRecent(p);
+  }, [p]);
 
   if (loading) return <Loader />;
   if (error) return <div className="container section"><ErrorBox error={error} /><Link to="/properties" className="btn btn-outline">Back to properties</Link></div>;
@@ -123,6 +132,9 @@ export default function PropertyDetails() {
               <button className={`btn ${liked ? 'btn-primary' : 'btn-outline'}`} onClick={onHeart}>
                 <Icon.Heart filled={liked} /> {liked ? 'Saved' : 'Save'}
               </button>
+              <button className={`btn btn-sm ${compare.has(p.id) ? 'btn-primary' : 'btn-outline'}`} onClick={() => { if (!compare.toggle(p.id)) toast.info('You can compare up to 3 properties'); }}>
+                {compare.has(p.id) ? '✓ In compare' : '+ Compare'}
+              </button>
             </div>
           </div>
 
@@ -156,6 +168,7 @@ export default function PropertyDetails() {
           <div className="grid grid-3">{nearby.data.map((n) => <PropertyCard key={n.id} p={n} />)}</div>
         </section>
       )}
+      <RecentlyViewed excludeId={p.id} className="section flush" />
     </div>
   );
 }

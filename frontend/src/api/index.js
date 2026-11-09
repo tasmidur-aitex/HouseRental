@@ -14,6 +14,7 @@ export const authApi = {
 
 export const placesApi = {
   cities: (query) => api.get('/cities', { per_page: 100, ...query }),
+  city: (id) => api.get(`/cities/${id}`),
   subcities: (city_id) => api.get('/subcities', { city_id, per_page: 100 }),
 };
 

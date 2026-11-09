@@ -19,6 +19,9 @@ export default function Footer() {
           <h4>{t('quickLinks')}</h4>
           <Link to="/properties">{t('properties')}</Link>
           <Link to="/blog">{t('blog')}</Link>
+          <Link to="/rent/family">Family homes</Link>
+          <Link to="/rent/bachelor">Bachelor rentals</Link>
+          <Link to="/list-your-property">List your property</Link>
           <Link to="/about">About us</Link>
           <Link to="/faq">FAQ</Link>
           <Link to="/contact">{t('contact')}</Link>
