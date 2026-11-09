@@ -103,6 +103,7 @@ Route::prefix('v1')->namespace('Api\V1')->group(function () {
             Route::post('auth/logout', 'AdminAuthController@logout');
             Route::get('auth/me', 'AdminAuthController@me');
 
+            Route::get('alerts', 'ReportController@alerts');
             Route::get('reports/summary', 'ReportController@summary')->middleware('admin.can:reports');
             Route::get('reports/delivered', 'ReportController@deliveredReport')->middleware('admin.can:reports');
             Route::get('reports/delivered/export', 'ReportController@exportDelivered')->middleware('admin.can:reports');

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { adminTokenStore } from '../api/client.js';
 import { adm } from './adminApi.js';
 
@@ -8,6 +8,17 @@ export const useAdmin = () => useContext(AdminContext);
 export function AdminProvider({ children }) {
   const [admin, setAdmin] = useState(null);
   const [ready, setReady] = useState(!adminTokenStore.get());
+  const [alerts, setAlerts] = useState(null);
+
+  const refreshAlerts = useCallback(() => adm.get('/admin/alerts').then((r) => setAlerts(r.data)).catch(() => {}), []);
+
+  // badges in the sidebar and the bell: load once signed in, then refresh every minute
+  useEffect(() => {
+    if (!admin) return undefined;
+    refreshAlerts();
+    const t = setInterval(refreshAlerts, 60000);
+    return () => clearInterval(t);
+  }, [admin, refreshAlerts]);
 
   useEffect(() => {
     if (!adminTokenStore.get()) return;
@@ -38,5 +49,5 @@ export function AdminProvider({ children }) {
 
   const can = (perm) => !perm || !!admin?.permissions?.[perm];
 
-  return <AdminContext.Provider value={{ admin, ready, login, logout, can }}>{children}</AdminContext.Provider>;
+  return <AdminContext.Provider value={{ admin, ready, login, logout, can, alerts, refreshAlerts }}>{children}</AdminContext.Provider>;
 }

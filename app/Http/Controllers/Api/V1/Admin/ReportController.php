@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Http\Resources\PropertyResource;
+use App\Http\Resources\VisitResource;
+use App\Model\Contact;
 use App\Model\Inquiry;
 use App\Model\Property;
+use App\Model\Visit;
 use App\Order;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ReportController extends ApiController
@@ -29,7 +33,109 @@ class ReportController extends ApiController
             'revenue'           => (float) Order::whereIn('status', Order::PAID)->sum('amount'),
             'delivered_today'   => $this->delivered(['date' => date('Y-m-d')])->count(),
             'delivered_total_this_month' => (float) $this->delivered(['month' => date('F'), 'year' => date('Y')])->sum('total_price'),
+            'alerts'            => $this->alertCounts(),
+            'monthly'           => $this->monthlyPayments(6),
+            'upcoming_visits'   => (new \Illuminate\Http\Resources\Json\AnonymousResourceCollection(
+                Visit::with('property')->whereDate('visit_date', '>=', date('Y-m-d'))
+                    ->whereIn('status', [Visit::PENDING, Visit::CONFIRMED])
+                    ->orderBy('visit_date')->orderBy('visit_time')->limit(5)->get(),
+                VisitResource::class
+            ))->resolve(request()),
+            'awaiting_review'   => $this->awaitingReview(),
+            'recent_activity'   => $this->recentActivity(),
         ]);
+    }
+
+    /** Counts of things waiting for an admin: drives the sidebar badges and the bell. Open to every admin. */
+    public function alerts()
+    {
+        return $this->success($this->alertCounts());
+    }
+
+    protected function alertCounts(): array
+    {
+        return [
+            'pending_properties' => Property::where('status', Property::PENDING)->count(),
+            'new_inquiries'      => Inquiry::where('status', 0)->count(),
+            'pending_visits'     => Visit::where('status', Visit::PENDING)->count(),
+            'unread_messages'    => Contact::where('status', 0)->count(),
+        ];
+    }
+
+    /** Collected (paid) vs still-pending payment amounts for each of the last $months months. */
+    protected function monthlyPayments(int $months): array
+    {
+        $start = Carbon::now()->startOfMonth()->subMonths($months - 1);
+        $series = [];
+        for ($i = 0; $i < $months; $i++) {
+            $m = $start->copy()->addMonths($i);
+            $series[$m->format('Y-m')] = ['month' => $m->format('Y-m'), 'label' => $m->format('M'), 'collected' => 0.0, 'pending' => 0.0];
+        }
+
+        // grouped in PHP so it works on every database; the range is small
+        Order::where('created_at', '>=', $start)->get(['amount', 'status', 'created_at'])->each(function ($o) use (&$series) {
+            $key = optional($o->created_at)->format('Y-m');
+            if (!isset($series[$key])) {
+                return;
+            }
+            if ($o->is_paid) {
+                $series[$key]['collected'] += (float) $o->amount;
+            } elseif ($o->status === Order::PENDING) {
+                $series[$key]['pending'] += (float) $o->amount;
+            }
+        });
+
+        return array_values($series);
+    }
+
+    protected function awaitingReview(): array
+    {
+        return Property::where('status', Property::PENDING)->with('city')->orderBy('id', 'desc')->limit(3)->get()->map(function ($p) {
+            return [
+                'id'         => $p->id,
+                'code'       => $p->property_code,
+                'title'      => $p->name,
+                'address'    => $p->address,
+                'city'       => optional($p->city)->city_name,
+                'price'      => (float) $p->price,
+                'thumbnail'  => $p->image_one ? url($p->image_one) : null,
+                'created_at' => optional($p->created_at)->toIso8601String(),
+            ];
+        })->all();
+    }
+
+    /** Latest events from every part of the system, newest first. */
+    protected function recentActivity(): array
+    {
+        $items = [];
+        $push = function ($type, $title, $detail, $at) use (&$items) {
+            $items[] = ['type' => $type, 'title' => $title, 'detail' => $detail, 'at' => $at ? $at->toIso8601String() : null, 'ts' => $at ? $at->timestamp : 0];
+        };
+
+        Order::whereIn('status', Order::PAID)->with('user')->orderBy('id', 'desc')->limit(5)->get()->each(function ($o) use ($push) {
+            $push('payment', 'Payment received' . ($o->user ? ' from ' . $o->user->name : ''), '৳ ' . number_format((float) $o->amount), $o->paid_at ?: $o->created_at);
+        });
+        Property::where('status', Property::PENDING)->orderBy('id', 'desc')->limit(5)->get()->each(function ($p) use ($push) {
+            $push('property', 'New property submitted', $p->name . ' · ' . $p->property_code, $p->created_at);
+        });
+        Visit::with('property')->orderBy('id', 'desc')->limit(5)->get()->each(function ($v) use ($push) {
+            $push('visit', 'Visit requested by ' . $v->name, optional($v->property)->name . ' · ' . $v->visit_date->format('d M') . ' ' . $v->visit_time, $v->created_at);
+        });
+        Inquiry::orderBy('id', 'desc')->limit(5)->get()->each(function ($i) use ($push) {
+            $push('inquiry', 'New request from ' . $i->name, 'Property ' . $i->property_code, $i->created_at);
+        });
+        Contact::orderBy('id', 'desc')->limit(5)->get()->each(function ($c) use ($push) {
+            $push('message', 'New message from ' . $c->name, $c->subject ?: str_limit($c->message, 50), $c->created_at);
+        });
+
+        usort($items, function ($a, $b) {
+            return $b['ts'] <=> $a['ts'];
+        });
+
+        return array_map(function ($i) {
+            unset($i['ts']);
+            return $i;
+        }, array_slice($items, 0, 8));
     }
 
     /**

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { adm } from '../adminApi.js';
 import { useFetch } from '../../hooks/useFetch.js';
@@ -142,8 +142,10 @@ export default function Properties() {
   const [params, setParams] = useSearchParams();
   const status = params.get('status') || '';
   const [page, setPage] = useState(1);
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(params.get('q') || '');
   const [openId, setOpenId] = useState(null);
+  // the top-bar search navigates here with ?q=, so follow the URL
+  useEffect(() => { setQ(params.get('q') || ''); setPage(1); }, [params]);
   const { data, meta, loading, error, reload } = useFetch(() => adm.get('/admin/properties', { page, per_page: 15, q, status }), [page, q, status]);
 
   const setStatus = (v) => { setParams(v === '' ? {} : { status: v }); setPage(1); };
@@ -178,7 +180,7 @@ export default function Properties() {
     <>
       <div className="a-head"><h1>Properties</h1></div>
       <Tabs tabs={TABS} value={status} onChange={setStatus} />
-      <Toolbar><SearchBox value={q} onChange={(v) => { setQ(v); setPage(1); }} placeholder="Search title, address, code…" /></Toolbar>
+      <Toolbar><SearchBox key={params.get('q') || 'x'} value={q} onChange={(v) => { setQ(v); setPage(1); }} placeholder="Search title, address, code…" /></Toolbar>
       <ErrorBox error={error} onRetry={reload} />
       {loading && !data ? <Loader /> : <Table columns={columns} rows={data || []} empty="No properties in this view." />}
       <Pagination meta={meta} onPage={setPage} />
