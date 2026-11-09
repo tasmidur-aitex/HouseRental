@@ -45,10 +45,15 @@ return [
             'provider' => 'admins',
         ],
 
+        // Stateless bearer-token guards used by /api/v1 (see AuthServiceProvider)
         'api' => [
-            'driver' => 'token',
+            'driver' => 'api-token',
             'provider' => 'users',
-            'hash' => false,
+        ],
+
+        'api-admin' => [
+            'driver' => 'api-admin-token',
+            'provider' => 'admins',
         ],
     ],
 
