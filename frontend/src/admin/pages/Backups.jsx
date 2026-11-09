@@ -3,8 +3,9 @@ import { adm } from '../adminApi.js';
 import { downloadFile } from '../../api/client.js';
 import { useFetch } from '../../hooks/useFetch.js';
 import { useToast } from '../../context/ToastContext.jsx';
-import { ErrorBox, Loader } from '../../components/Ui.jsx';
-import { PageHead, RowActions, Table } from '../components/AdminUi.jsx';
+import { ErrorBox } from '../../components/Ui.jsx';
+import { PageHead } from '../components/AdminUi.jsx';
+import DataTable from '../components/DataTable.jsx';
 
 const size = (b) => (b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
 
@@ -36,22 +37,22 @@ export default function Backups() {
     }
   };
 
+  const actions = (b) => [
+    { label: 'Download', icon: 'Download', onClick: () => downloadFile(`/admin/backups/${encodeURIComponent(b.name)}`, {}, b.name).catch((e) => toast.error(e.message)) },
+    { divider: true },
+    { label: 'Delete backup', icon: 'Trash', danger: true, onClick: () => remove(b) },
+  ];
   const columns = [
-    { label: 'File', render: (b) => <code>{b.name}</code> },
-    { label: 'Size', render: (b) => size(b.size) },
-    { label: 'Created', render: (b) => new Date(b.created_at).toLocaleString() },
-    { label: '', className: 'right', render: (b) => (
-      <RowActions>
-        <button className="btn btn-outline btn-sm" onClick={() => downloadFile(`/admin/backups/${encodeURIComponent(b.name)}`, {}, b.name).catch((e) => toast.error(e.message))}>Download</button>
-        <button className="btn btn-ghost btn-sm danger" onClick={() => remove(b)}>Delete</button>
-      </RowActions>) },
+    { label: 'File', key: 'name', render: (b) => <code>{b.name}</code> },
+    { label: 'Size', className: 'right', sort: (b) => b.size, render: (b) => size(b.size) },
+    { label: 'Created', sort: (b) => b.created_at, render: (b) => new Date(b.created_at).toLocaleString() },
   ];
 
   return (
     <>
       <PageHead title="Database backups" subtitle="Daily backups run automatically at 02:00. You can also back up now."><button className="btn btn-primary" onClick={run} disabled={running}>{running ? 'Backing up…' : 'Back up now'}</button></PageHead>
       <ErrorBox error={error} onRetry={reload} />
-      {loading && !data ? <Loader /> : <Table columns={columns} rows={(data || []).map((b) => ({ ...b, id: b.name }))} empty="No backups yet." />}
+      <DataTable columns={columns} rows={(data || []).map((b) => ({ ...b, id: b.name }))} loading={loading} empty="No backups yet." actions={actions} />
     </>
   );
 }

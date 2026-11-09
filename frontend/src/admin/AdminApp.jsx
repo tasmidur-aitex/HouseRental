@@ -71,7 +71,8 @@ function Bell({ alerts }) {
 function Shell() {
   const { admin, ready, logout, can, alerts } = useAdmin();
   const [open, setOpen] = useState(false); // mobile drawer
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('hr_admin_collapsed') === '1');
+  // mini icon rail by default; it expands on hover and can be pinned open
+  const [pinned, setPinned] = useState(() => localStorage.getItem('hr_admin_pinned') === '1');
   const [search, setSearch] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
@@ -89,9 +90,9 @@ function Shell() {
   };
   const toggle = () => {
     if (window.matchMedia('(max-width: 900px)').matches) return setOpen(!open);
-    const next = !collapsed;
-    setCollapsed(next);
-    try { localStorage.setItem('hr_admin_collapsed', next ? '1' : '0'); } catch { /* ignore */ }
+    const next = !pinned;
+    setPinned(next);
+    try { localStorage.setItem('hr_admin_pinned', next ? '1' : '0'); } catch { /* ignore */ }
   };
   const submitSearch = (e) => {
     e.preventDefault();
@@ -99,8 +100,9 @@ function Shell() {
   };
 
   return (
-    <div className={`a-shell ${collapsed ? 'collapsed' : ''}`}>
+    <div className={`a-shell ${pinned ? 'pinned' : 'mini'}`}>
       <aside className={`a-side ${open ? 'open' : ''}`}>
+        <div className="a-side-panel">
         <Link to="/admin" className="a-brand" onClick={() => setOpen(false)}>
           <LogoMark size={40} />
           <span className="a-brand-text">Smart <b>To-Let</b><small>Admin</small></span>
@@ -129,12 +131,13 @@ function Shell() {
             <Icon.Logout width={20} height={20} /><span className="nav-label">Logout</span>
           </button>
         </div>
+        </div>
       </aside>
       {open && <div className="a-scrim" onClick={() => setOpen(false)} />}
 
       <div className="a-main">
         <header className="a-top">
-          <button className="icon-plain" onClick={toggle} aria-label="Toggle menu"><Icon.Menu width={24} height={24} /></button>
+          <button className="icon-plain" onClick={toggle} aria-label="Pin or unpin the menu" title={pinned ? 'Collapse menu to icons' : 'Keep menu open'}><Icon.Menu width={24} height={24} /></button>
           <form className="a-global-search" onSubmit={submitSearch} role="search">
             <Icon.Search width={18} height={18} />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search property, address or code…" aria-label="Search properties" />

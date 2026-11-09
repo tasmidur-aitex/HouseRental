@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { adm } from '../adminApi.js';
 import { useFetch } from '../../hooks/useFetch.js';
 import { useToast } from '../../context/ToastContext.jsx';
-import Pagination from '../../components/Pagination.jsx';
-import { ErrorBox, Loader } from '../../components/Ui.jsx';
-import { FormModal, PageHead, RowActions, SearchBox, Table, Toolbar } from './AdminUi.jsx';
+import { ErrorBox } from '../../components/Ui.jsx';
+import { FormModal, PageHead, SearchBox, Toolbar } from './AdminUi.jsx';
+import DataTable, { usePaging } from './DataTable.jsx';
 
 /**
  * Generic list + create/edit/delete screen for simple resources.
@@ -12,10 +12,10 @@ import { FormModal, PageHead, RowActions, SearchBox, Table, Toolbar } from './Ad
  */
 export default function CrudPage({ title, subtitle, noun, endpoint, columns, fields, empty, toForm, toBody, search = true, query, extraActions, canCreate = true }) {
   const toast = useToast();
-  const [page, setPage] = useState(1);
+  const { page, perPage, setPage, setPerPage } = usePaging(15);
   const [q, setQ] = useState('');
   const [editing, setEditing] = useState(null); // null | 'new' | item
-  const { data, meta, loading, error, reload } = useFetch(() => adm.get(endpoint, { page, per_page: 15, q, ...query }), [endpoint, page, q, JSON.stringify(query)]);
+  const { data, meta, loading, error, reload } = useFetch(() => adm.get(endpoint, { page, per_page: perPage, q, ...query }), [endpoint, page, perPage, q, JSON.stringify(query)]);
 
   const save = async (form) => {
     const isEdit = editing !== 'new';
@@ -47,16 +47,12 @@ export default function CrudPage({ title, subtitle, noun, endpoint, columns, fie
     }
   };
 
-  const cols = [...columns, {
-    label: '', className: 'right',
-    render: (r) => (
-      <RowActions>
-        {extraActions?.(r, reload)}
-        <button className="btn btn-outline btn-sm" onClick={() => setEditing(r)}>Edit</button>
-        <button className="btn btn-ghost btn-sm danger" onClick={() => remove(r)}>Delete</button>
-      </RowActions>
-    ),
-  }];
+  const actions = (r) => [
+    { label: `Edit ${noun.toLowerCase()}`, icon: 'Edit', onClick: () => setEditing(r) },
+    ...(extraActions ? extraActions(r, reload) : []),
+    { divider: true },
+    { label: `Delete ${noun.toLowerCase()}`, icon: 'Trash', danger: true, onClick: () => remove(r) },
+  ];
 
   return (
     <>
@@ -65,8 +61,8 @@ export default function CrudPage({ title, subtitle, noun, endpoint, columns, fie
       </PageHead>
       {search && <Toolbar><SearchBox value={q} onChange={(v) => { setQ(v); setPage(1); }} /></Toolbar>}
       <ErrorBox error={error} onRetry={reload} />
-      {loading && !data ? <Loader /> : <Table columns={cols} rows={data || []} />}
-      <Pagination meta={meta} onPage={setPage} />
+      <DataTable columns={columns} rows={data || []} loading={loading} empty={`No ${noun.toLowerCase()} yet.`}
+        meta={meta} onPage={setPage} perPage={perPage} onPerPage={setPerPage} actions={actions} onRowClick={setEditing} />
       {editing && (
         <FormModal
           title={editing === 'new' ? `Add ${noun.toLowerCase()}` : `Edit ${noun.toLowerCase()}`}
