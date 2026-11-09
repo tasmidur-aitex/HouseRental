@@ -26,6 +26,33 @@ class PropertyController extends ApiController
         return $this->paginated($paginator, PropertyResource::class);
     }
 
+    /**
+     * Published properties within ?radius_km (default 5) of ?lat & ?lng, nearest first.
+     * Uses the Haversine formula, so it needs MySQL/MariaDB (trig functions).
+     */
+    public function near(Request $request)
+    {
+        $data = $request->validate([
+            'lat'       => 'required|numeric|between:-90,90',
+            'lng'       => 'required|numeric|between:-180,180',
+            'radius_km' => 'nullable|numeric|min:0.1|max:200',
+        ]);
+        $radius = (float) ($data['radius_km'] ?? 5);
+
+        $distance = '(6371 * acos(least(1, cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))))';
+        $bind     = [$data['lat'], $data['lng'], $data['lat']];
+
+        $paginator = Property::public()
+            ->with(['city', 'subcityModel'])
+            ->whereNotNull('latitude')->whereNotNull('longitude')
+            ->selectRaw("user_properties.*, $distance as distance_km", $bind)
+            ->whereRaw("$distance <= ?", array_merge($bind, [$radius]))
+            ->orderByRaw($distance, $bind)
+            ->paginate($this->perPage($request, 12));
+
+        return $this->paginated($paginator, PropertyResource::class);
+    }
+
     public function show($id)
     {
         $property = Property::public()->with(['city', 'subcityModel'])->findOrFail($id);

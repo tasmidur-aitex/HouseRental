@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Admin;
 use App\Exceptions\ApiException;
 use App\Http\Controllers\Api\V1\ApiController;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\AdminResource;
 use App\Model\ApiToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +22,7 @@ class AdminAuthController extends ApiController
         }
 
         return $this->success([
-            'admin'      => (new UserResource($admin))->resolve($request),
+            'admin'      => (new AdminResource($admin))->resolve($request),
             'token'      => $admin->createApiToken('admin', 7),
             'token_type' => 'Bearer',
         ], 'Login successful');
@@ -37,6 +37,6 @@ class AdminAuthController extends ApiController
 
     public function me(Request $request)
     {
-        return $this->success($request->user('api-admin'), 'OK', UserResource::class);
+        return $this->success($request->user('api-admin'), 'OK', AdminResource::class);
     }
 }

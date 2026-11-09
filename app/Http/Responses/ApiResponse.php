@@ -36,7 +36,7 @@ class ApiResponse
     /**
      * Paginated list: items in `data`, paging details in `meta` and `links`.
      */
-    public static function paginated(LengthAwarePaginator $paginator, ?string $resource = null, string $message = 'OK'): JsonResponse
+    public static function paginated(LengthAwarePaginator $paginator, ?string $resource = null, string $message = 'OK', array $extraMeta = []): JsonResponse
     {
         return response()->json([
             'success' => true,
@@ -49,7 +49,7 @@ class ApiResponse
                 'last_page'    => $paginator->lastPage(),
                 'from'         => $paginator->firstItem(),
                 'to'           => $paginator->lastItem(),
-            ],
+            ] + $extraMeta,
             'links'   => [
                 'first' => $paginator->url(1),
                 'last'  => $paginator->url($paginator->lastPage()),

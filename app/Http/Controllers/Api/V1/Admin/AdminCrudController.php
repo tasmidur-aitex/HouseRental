@@ -28,9 +28,15 @@ abstract class AdminCrudController extends ApiController
         return $validated;
     }
 
+    /** Override to restrict which rows this controller may touch. */
+    protected function baseQuery()
+    {
+        return ($this->model)::with($this->with);
+    }
+
     public function index(Request $request)
     {
-        $query = ($this->model)::with($this->with)->orderBy('id', 'desc');
+        $query = $this->baseQuery()->orderBy('id', 'desc');
 
         if ($request->filled('q') && $this->searchable) {
             $like = '%' . $request->query('q') . '%';
@@ -46,7 +52,7 @@ abstract class AdminCrudController extends ApiController
 
     public function show($id)
     {
-        return $this->success(($this->model)::with($this->with)->findOrFail($id), 'OK', $this->resource);
+        return $this->success($this->baseQuery()->findOrFail($id), 'OK', $this->resource);
     }
 
     public function store(Request $request)
@@ -58,7 +64,7 @@ abstract class AdminCrudController extends ApiController
 
     public function update(Request $request, $id)
     {
-        $item = ($this->model)::findOrFail($id);
+        $item = $this->baseQuery()->findOrFail($id);
         $item->update($this->attributes($request->validate($this->rules($request, $id))));
 
         return $this->success($item->fresh($this->with), 'Updated', $this->resource);
@@ -66,7 +72,7 @@ abstract class AdminCrudController extends ApiController
 
     public function destroy($id)
     {
-        ($this->model)::findOrFail($id)->delete();
+        $this->baseQuery()->findOrFail($id)->delete();
 
         return $this->deleted();
     }

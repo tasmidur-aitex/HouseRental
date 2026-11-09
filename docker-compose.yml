@@ -1,0 +1,107 @@
+# One command, public URL:
+#     NGROK_AUTHTOKEN=<your token> docker compose up --build
+# Start-up order: db -> backend -> ngrok -> frontend
+#   https://<dynamic>.ngrok-free.app           website
+#   https://<dynamic>.ngrok-free.app/backend   Laravel API  (/backend/api/v1/...)
+# Everything else (database, app key, admin password, public URL) is generated automatically.
+
+name: houserental
+
+services:
+  # 1) database -------------------------------------------------------------
+  db:
+    image: mysql:8.0
+    command: ["--default-authentication-plugin=mysql_native_password", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    environment:
+      MYSQL_DATABASE: houserental
+      MYSQL_USER: houserental
+      MYSQL_PASSWORD: ${DB_PASSWORD:-houserental}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-houserental-root}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+
+  # 2) backend (Laravel API) ----------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: houserental
+      DB_USERNAME: houserental
+      DB_PASSWORD: ${DB_PASSWORD:-houserental}
+      CACHE_DRIVER: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+      MAIL_DRIVER: log                    # mails are written to the log; set real SMTP to send them
+      TRUSTED_PROXIES: "*"                # requests arrive through nginx + ngrok
+      URL_PREFIX: /backend                # the API is published under <site>/backend
+      PUBLIC_URL_FILE: /shared/public_url # written by the frontend container once ngrok is up
+      SEED_DEMO: ${SEED_DEMO:-true}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}  # empty = generated once and printed in the logs
+      STORE_ID: ${STORE_ID:-}
+      STORE_PASSWORD: ${STORE_PASSWORD:-}
+      API_DOMAIN_URL: ${API_DOMAIN_URL:-https://sandbox.sslcommerz.com}
+      IS_LOCALHOST: ${IS_LOCALHOST:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    volumes:
+      - backend_storage:/var/www/html/storage
+      - media:/var/www/html/public/media
+      - shared:/shared:ro
+    restart: unless-stopped
+
+  # 3) ngrok tunnel -> the web container (which serves the site and proxies /backend) -----
+  ngrok:
+    image: ngrok/ngrok:latest
+    command: ["http", "frontend:80", "--log=stdout", "--config=/etc/ngrok/ngrok.yml"]
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:?Set NGROK_AUTHTOKEN (free at https://dashboard.ngrok.com/get-started/your-authtoken)}
+    volumes:
+      - ./docker/ngrok/ngrok.yml:/etc/ngrok/ngrok.yml:ro
+    ports:
+      - "127.0.0.1:4040:4040"            # ngrok inspector
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # 4) frontend (React + nginx) -----------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+      ngrok:
+        condition: service_started
+    environment:
+      NGROK_API: http://ngrok:4040/api/tunnels
+      PUBLIC_URL_FILE: /shared/public_url
+    volumes:
+      - shared:/shared
+    ports:
+      - "8080:80"                        # local access without ngrok
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  backend_storage:
+  media:
+  shared:

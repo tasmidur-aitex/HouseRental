@@ -37,10 +37,12 @@ trait PropertyInput
             'service_charge' => ['nullable', 'numeric', 'min:0'],
             'details'        => [$req, 'string', 'max:5000'],
             'video'          => ['nullable', 'string', 'max:255'],
+            'latitude'       => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude'      => ['nullable', 'numeric', 'between:-180,180'],
             'map_link'       => ['nullable', 'string', 'max:1000'],
-            'image_one'      => [$creating ? 'required' : 'sometimes', 'image', 'max:4096'],
-            'image_two'      => ['sometimes', 'nullable', 'image', 'max:4096'],
-            'image_three'    => ['sometimes', 'nullable', 'image', 'max:4096'],
+            'image_one'      => [$creating ? 'required' : 'sometimes', 'mimes:jpeg,jpg,png,webp,gif', 'max:4096'],
+            'image_two'      => ['sometimes', 'nullable', 'mimes:jpeg,jpg,png,webp,gif', 'max:4096'],
+            'image_three'    => ['sometimes', 'nullable', 'mimes:jpeg,jpg,png,webp,gif', 'max:4096'],
         ];
     }
 
