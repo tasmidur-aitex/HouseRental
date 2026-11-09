@@ -4,12 +4,13 @@ namespace App;
 
 use App\Notifications\AdminResetPasswordNotification;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Traits\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 
 
 class Admin extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, HasApiTokens;
 
     public function sendPasswordResetNotification($token)
      {
