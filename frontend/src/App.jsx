@@ -1,5 +1,6 @@
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
+import { Loader } from './components/Ui.jsx';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -20,6 +21,9 @@ import Compare from './pages/Compare.jsx';
 import ListYourProperty from './pages/ListYourProperty.jsx';
 import { Blog, BlogPost, Contact, NotFound, PaymentResult } from './pages/Misc.jsx';
 
+// The admin panel is a separate chunk so visitors never download it.
+const AdminApp = lazy(() => import('./admin/AdminApp.jsx'));
+
 function ScrollTop() {
   const { pathname } = useLocation();
   useEffect(() => window.scrollTo(0, 0), [pathname]);
@@ -30,6 +34,9 @@ const guard = (el) => <ProtectedRoute>{el}</ProtectedRoute>;
 
 export default function App() {
   const { pathname } = useLocation();
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    return <Suspense fallback={<Loader />}><Routes><Route path="/admin/*" element={<AdminApp />} /></Routes></Suspense>;
+  }
   const bare = ['/login', '/register', '/forgot-password', '/reset-password'].includes(pathname); // auth pages have their own layout
 
   return (

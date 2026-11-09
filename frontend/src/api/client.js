@@ -2,13 +2,15 @@
 // { success, message, data, meta?, links? }  or  { success:false, message, code, errors? }.
 
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1').replace(/\/$/, '');
-const TOKEN_KEY = 'hr_token';
+const makeStore = (key) => ({
+  get: () => localStorage.getItem(key),
+  set: (t) => localStorage.setItem(key, t),
+  clear: () => localStorage.removeItem(key),
+});
 
-export const tokenStore = {
-  get: () => localStorage.getItem(TOKEN_KEY),
-  set: (t) => localStorage.setItem(TOKEN_KEY, t),
-  clear: () => localStorage.removeItem(TOKEN_KEY),
-};
+// Site visitors and admins sign in separately and keep separate tokens.
+export const tokenStore = makeStore('hr_token');
+export const adminTokenStore = makeStore('hr_admin_token');
 
 export class ApiError extends Error {
   constructor(message, status, code, errors) {
@@ -32,7 +34,9 @@ function buildQuery(query) {
   return s ? `?${s}` : '';
 }
 
-export async function request(path, { method = 'GET', body, query, token = tokenStore.get() } = {}) {
+export async function request(path, { method = 'GET', body, query, scope = 'user' } = {}) {
+  const store = scope === 'admin' ? adminTokenStore : tokenStore;
+  const token = store.get();
   const headers = { Accept: 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -60,12 +64,25 @@ export async function request(path, { method = 'GET', body, query, token = token
 
   if (!res.ok || (json && json.success === false)) {
     if (res.status === 401 && token) {
-      tokenStore.clear();
-      window.dispatchEvent(new Event('auth:expired'));
+      store.clear();
+      window.dispatchEvent(new Event(scope === 'admin' ? 'admin:expired' : 'auth:expired'));
     }
     throw new ApiError(json?.message || `Request failed (${res.status})`, res.status, json?.code, json?.errors);
   }
   return json || { success: true, data: null };
+}
+
+/** Download a file (CSV etc.) with the admin token and save it in the browser. */
+export async function downloadFile(path, query, filename, scope = 'admin') {
+  const token = (scope === 'admin' ? adminTokenStore : tokenStore).get();
+  const res = await fetch(`${API_URL}${path}${buildQuery(query)}`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new ApiError('Download failed', res.status);
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export const api = {

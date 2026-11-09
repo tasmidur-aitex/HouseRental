@@ -20,4 +20,4 @@ On the API side set `CORS_ALLOWED_ORIGINS` (default allows `http://localhost:517
 - `src/pages/` home, properties (search + filters), property details, auth, wishlist,
   post property, my properties (pay listing fee), my payments, profile, blog, contact, payment result
 
-Admin panel and Google/Facebook sign-in buttons are not built yet. Public pages: home, properties, details, blog, contact, about, FAQ, privacy, terms, login, register, forgot/reset password.
+Admin panel lives at `/admin` (separate sign-in, per-section permissions for sub-admins). Google/Facebook sign-in buttons are not built yet.
